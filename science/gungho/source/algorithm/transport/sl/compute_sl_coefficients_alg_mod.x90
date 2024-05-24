@@ -64,12 +64,12 @@ contains
     implicit none
 
     ! Arguments
-    type(r_tran_field_type),  dimension(1:6), intent(inout) :: quintic_coefs_w3
-    type(integer_field_type), dimension(1:6), intent(inout) :: quintic_index_w3
-    type(r_tran_field_type),  dimension(1:2), intent(inout) :: linear_coefs_w3
-    type(r_tran_field_type),  dimension(1:6), intent(inout) :: quintic_coefs_wt
-    type(integer_field_type), dimension(1:6), intent(inout) :: quintic_index_wt
-    type(r_tran_field_type),  dimension(1:2), intent(inout) :: linear_coefs_wt
+    type(r_tran_field_type),  dimension(:), intent(inout) :: quintic_coefs_w3
+    type(integer_field_type), dimension(:), intent(inout) :: quintic_index_w3
+    type(r_tran_field_type),  dimension(:), intent(inout) :: linear_coefs_w3
+    type(r_tran_field_type),  dimension(:), intent(inout) :: quintic_coefs_wt
+    type(integer_field_type), dimension(:), intent(inout) :: quintic_index_wt
+    type(r_tran_field_type),  dimension(:), intent(inout) :: linear_coefs_wt
     type(r_tran_field_type),                  intent(in)    :: dep_pts
     type(r_tran_field_type),                  intent(in)    :: dep_pts_half
     logical(kind=l_def),                      intent(in)    :: strang
@@ -170,12 +170,12 @@ contains
     implicit none
 
     ! Arguments
-    type(r_tran_field_type),  dimension(1:4), intent(inout) :: cubic_coefs_w3
-    type(integer_field_type), dimension(1:4), intent(inout) :: cubic_index_w3
-    type(r_tran_field_type),  dimension(1:2), intent(inout) :: linear_coefs_w3
-    type(r_tran_field_type),  dimension(1:4), intent(inout) :: cubic_coefs_wt
-    type(integer_field_type), dimension(1:4), intent(inout) :: cubic_index_wt
-    type(r_tran_field_type),  dimension(1:2), intent(inout) :: linear_coefs_wt
+    type(r_tran_field_type),  dimension(:), intent(inout) :: cubic_coefs_w3
+    type(integer_field_type), dimension(:), intent(inout) :: cubic_index_w3
+    type(r_tran_field_type),  dimension(:), intent(inout) :: linear_coefs_w3
+    type(r_tran_field_type),  dimension(:), intent(inout) :: cubic_coefs_wt
+    type(integer_field_type), dimension(:), intent(inout) :: cubic_index_wt
+    type(r_tran_field_type),  dimension(:), intent(inout) :: linear_coefs_wt
     type(r_tran_field_type),                  intent(in)    :: dep_pts
     type(r_tran_field_type),                  intent(in)    :: dep_pts_half
     logical(kind=l_def),                      intent(in)    :: hermite
