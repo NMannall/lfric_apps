@@ -109,7 +109,7 @@ contains
       qr = quadrature_xyoz_type(nqp_exact, quadrature_rule)
       call projected_field(1)%initialise( vector_space = target_field%get_function_space() )
       call galerkin_projection_algorithm( projected_field, source_field, &
-                                          chi, panel_id, mesh, qr )
+                                          chi, panel_id, qr )
       call invoke( setval_X(target_field, projected_field(1)) )
     end if
 
@@ -179,7 +179,7 @@ contains
       call projected_field(2)%initialise( vector_space = u2_field%get_function_space() )
       call projected_field(3)%initialise( vector_space = u3_field%get_function_space() )
       call galerkin_projection_algorithm( projected_field, source_field, &
-                                          chi, panel_id, mesh, qr )
+                                          chi, panel_id, qr )
       call invoke( name = "copy_wind_fields2",             &
                    setval_X(u1_field, projected_field(1)), &
                    setval_X(u2_field, projected_field(2)), &

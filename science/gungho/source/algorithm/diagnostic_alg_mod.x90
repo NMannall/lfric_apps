@@ -217,7 +217,7 @@ contains
       else
 
         ! Project the field to the output field
-        call project_output( field, output_field, chi, panel_id, mesh, W3 )
+        call project_output( field, output_field, chi, panel_id, W3 )
 
       end if
 
@@ -393,7 +393,7 @@ contains
         ! Project the field to the output field
         chi      => get_coordinates( mesh%get_id() )
         panel_id => get_panel_id( mesh%get_id() )
-        call project_output( field, output_field, chi, panel_id, mesh, W3 )
+        call project_output( field, output_field, chi, panel_id, W3 )
 
       end if
 

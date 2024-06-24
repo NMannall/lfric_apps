@@ -237,9 +237,7 @@ subroutine write_vector_diagnostic( field_name, field, &
       output_dim = 3
 
       ! Project the field to the output field
-      call project_output(                                   &
-        temp_field, projected_field, chi, panel_id, mesh, W3 &
-      )
+      call project_output( temp_field, projected_field, chi, panel_id, W3 )
 
       do i =1,output_dim
          ! Write the component number into a new field name
@@ -279,7 +277,7 @@ subroutine write_vector_diagnostic( field_name, field, &
       output_dim = 3
 
       ! Project the field to the output field
-      call project_output( temp_field, projected_field, chi, panel_id, mesh, W3 )
+      call project_output( temp_field, projected_field, chi, panel_id, W3 )
 
       ! Set up correct I/O handler for Xi projected to W3
       tmp_write_ptr => write_field_generic
