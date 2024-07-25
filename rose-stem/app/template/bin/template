@@ -22,10 +22,17 @@ TEMPLATERATOR=$LFRIC_CORE_DIR/infrastructure/build/tools/Templaterator
 
 WORKING_DIR=$CYLC_SUITE_SHARE_DIR/$BUILD_NAME/extract/lfric_core
 
-# Different precission fields
+# Different precision fields
 #
 FIELD_TEMPLATE=$LFRIC_CORE_DIR/infrastructure/source/field/field_mod.t90
 
 $TEMPLATERATOR $FIELD_TEMPLATE -o $WORKING_DIR/field_real32_mod.f90 -s type=real -s kind=real32
 $TEMPLATERATOR $FIELD_TEMPLATE -o $WORKING_DIR/field_real64_mod.f90 -s type=real -s kind=real64
 $TEMPLATERATOR $FIELD_TEMPLATE -o $WORKING_DIR/field_int32_mod.f90 -s type=integer -s kind=int32
+
+# Different precision operators
+#
+OPERATOR_TEMPLATE=$LFRIC_CORE_DIR/infrastructure/source/operator/operator_mod.t90
+
+$TEMPLATERATOR $OPERATOR_TEMPLATE -o $WORKING_DIR/operator_real32_mod.f90 -s type=real -s kind=real32
+$TEMPLATERATOR $OPERATOR_TEMPLATE -o $WORKING_DIR/operator_real64_mod.f90 -s type=real -s kind=real64
