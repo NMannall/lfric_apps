@@ -253,7 +253,10 @@
         "gungho_model_held-suarez-C24_MG_ex1a_cce_full-debug-64bit",
         "gungho_model_held-suarez-C24_MG_ex1a_cce_fast-debug-64bit",
     ],
-    }) %}
+    "gungho_model_ex1a_weekly": [
+        "gungho_model_baroclinic-C192_MG_ex1a_gnu_fast-debug-64bit",
+    ],
+  }) %}
 
 {# Platform Generic Groups #}
 {% do site_groups.update({
@@ -277,6 +280,7 @@
     ],
     "gungho_model_weekly": [
         "gungho_model_xc40_weekly",
+        "gungho_model_ex1a_weekly",
     ],
     "gungho_model_next-config": [
         "gungho_model_spice_next-config",

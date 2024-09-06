@@ -5,6 +5,20 @@
 {# ########################################################################### #}
 {% do LOG.debug("Entered site/meto/lfric_atm/tasks_lfric_atm_ex1a.cylc") %}
 
+{% if task_ns.conf_name == "nwp_gal9-C192_MG" %}
+    {% do task_dict.update({
+        "mpi_parts": 384,
+        "wallclock": 20,
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_perf-C192_MG" %}
+    {% do task_dict.update({
+        "mpi_parts": 384,
+        "wallclock": 20,
+    }) %}
+
+{% endif %}
+
 {# Set default values #}
 {% if task_dict %}
     {% if ("full-debug" in task) and ("build_lfric_atm" not in task) %}

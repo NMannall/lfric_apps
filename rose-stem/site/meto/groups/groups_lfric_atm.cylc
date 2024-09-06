@@ -227,7 +227,10 @@
         "lfric_atm_nwp_gal9_debug-C12_ex1a_cce_full-debug-64bit",
         "lfric_atm_nwp_gal9_debug-C12_ex1a_cce_fast-debug-64bit",
     ],
-    }) %}
+    "lfric_atm_ex1a_weekly": [
+        "lfric_atm_nwp_gal9-C192_MG_ex1a_gnu_fast-debug-64bit-rbl32",
+    ],
+  }) %}
 
 {# ###################################################################### #}
 {# Platform Generic Groups #}
@@ -244,6 +247,7 @@
     ],
     "lfric_atm_weekly": [
         "lfric_atm_xc40_weekly",
+        "lfric_atm_ex1a_weekly",
     ],
     "lfric_atm_performance": [
         "lfric_atm_xc40_performance",
