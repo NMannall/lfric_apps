@@ -9,7 +9,7 @@ module bl_imp_diags_mod
 
   use constants_mod,             only: l_def
   use field_mod,                 only: field_type
-  use jules_control_init_mod,    only: n_surf_tile
+  use jules_control_init_mod,    only: n_surf_tile, n_land_tile
   use sci_weighted_ave_kernel_mod, only: weighted_ave_kernel_type
   use bl_extra_diags_kernel_mod, only: bl_extra_diags_kernel_type
   use physics_mappings_alg_mod,  only: map_physics_winds
@@ -40,6 +40,14 @@ module bl_imp_diags_mod
   logical( l_def ) :: q1p5m_flag
   logical( l_def ) :: qcl1p5m_flag
   logical( l_def ) :: rh1p5m_flag
+  logical( l_def ) :: t1p5m_ssi_flag
+  logical( l_def ) :: q1p5m_ssi_flag
+  logical( l_def ) :: qcl1p5m_ssi_flag
+  logical( l_def ) :: rh1p5m_ssi_flag
+  logical( l_def ) :: t1p5m_land_flag
+  logical( l_def ) :: q1p5m_land_flag
+  logical( l_def ) :: qcl1p5m_land_flag
+  logical( l_def ) :: rh1p5m_land_flag
   logical( l_def ) :: u10m_flag
   logical( l_def ) :: v10m_flag
   logical( l_def ) :: wind_gust_flag
@@ -64,11 +72,16 @@ module bl_imp_diags_mod
   logical( l_def ) :: surf_lw_up_flag
   logical( l_def ) :: surf_lw_down_flag
   logical( l_def ) :: grid_surface_temperature_flag
+  logical( l_def ) :: land_surface_temperature_flag
   logical( l_def ) :: vis_no_precip_flag
   logical( l_def ) :: vis_with_precip_flag
   logical( l_def ) :: fog_fraction_flag
+  logical( l_def ) :: fog_fraction_ssi_flag
+  logical( l_def ) :: fog_fraction_land_flag
   logical( l_def ) :: vis_prob_5km_flag
   logical( l_def ) :: dew_point_flag
+  logical( l_def ) :: dew_point_ssi_flag
+  logical( l_def ) :: dew_point_land_flag
 
   public :: initialise_diags_for_bl_imp
   public :: output_diags_for_bl_imp
@@ -99,6 +112,14 @@ contains
   !> @param[in,out] q1p5m              1.5m specific humidity
   !> @param[in,out] qcl1p5m            1.5m specific cloud water
   !> @param[in,out] rh1p5m             1.5m relative humidity
+  !> @param[in,out] t1p5m_ssi          1.5m temperature over sea and sea-ice
+  !> @param[in,out] q1p5m_ssi          1.5m specific humidity over sea and sea-ice
+  !> @param[in,out] qcl1p5m_ssi        1.5m specific cloud water over sea and sea-ice
+  !> @param[in,out] rh1p5m_ssi         1.5m relative humidity over sea and sea-ice
+  !> @param[in,out] t1p5m_land         1.5m temperature over land
+  !> @param[in,out] q1p5m_land         1.5m specific humidity over land
+  !> @param[in,out] qcl1p5m_land       1.5m specific cloud water over land
+  !> @param[in,out] rh1p5m_land        1.5m relative humidity over land
   !> @param[in,out] u10m               Zonal 10m wind speed
   !> @param[in,out] v10m               Meridional 10m wind speed
   !> @param[in,out] ustar_implicit     Implicit friction velocity
@@ -124,8 +145,12 @@ contains
   !> @param[in,out] surf_lw_down       surface downward longwave flux on tiles
   !> @param[in,out] grid_surface_temperature Grid mean surface temperature
   !> @param[in,out] fog_fraction             fog fraction at screen level
+  !> @param[in,out] fog_fraction_ssi         Fog_fraction over sea/sea-ice
+  !> @param[in,out] fog_fraction_land        Fog_fraction over land
   !> @param[in,out] vis_prob_5km             probability of vis below 5km at screen level
   !> @param[in,out] dew_point                dew point temperature at screen level
+  !> @param[in,out] dew_point_ssi            Dew point temperature over sea/sea-ice
+  !> @param[in,out] dew_point_land           Dew point temperature over land
   !> @param[in,out] visibility_with_precip   visibility including precipitation at screen level
   !> @param[in,out] visibility_no_precip     visibility excluding precipitation at screen level
 
@@ -137,6 +162,10 @@ contains
                                          dcfl_bl, dcff_bl,               &
                                          t1p5m_surft, q1p5m_surft,       &
                                          t1p5m, q1p5m, qcl1p5m, rh1p5m,  &
+                                         t1p5m_ssi, q1p5m_ssi,           &
+                                         qcl1p5m_ssi, rh1p5m_ssi,        &
+                                         t1p5m_land, q1p5m_land,         &
+                                         qcl1p5m_land, rh1p5m_land,      &
                                          u10m, v10m, ustar_implicit,     &
                                          wind_gust, scale_dep_wind_gust, &
                                          wspd10m_neut, u10m_neut,        &
@@ -150,8 +179,10 @@ contains
                                          surf_sw_net, surf_radnet,       &
                                          surf_lw_up, surf_lw_down,       &
                                          grid_surface_temperature,       &
-                                         fog_fraction, vis_prob_5km,     &
+                                         fog_fraction, fog_fraction_ssi, &
+                                         fog_fraction_land, vis_prob_5km,&
                                          dew_point,                      &
+                                         dew_point_ssi, dew_point_land,  &
                                          visibility_with_precip,         &
                                          visibility_no_precip)
 
@@ -168,10 +199,13 @@ contains
     type( field_type ), intent(inout) :: dcfl_bl, dcff_bl
     type( field_type ), intent(inout) :: t1p5m_surft, q1p5m_surft
     type( field_type ), intent(inout) :: t1p5m, q1p5m, qcl1p5m, rh1p5m
+    type( field_type ), intent(inout) :: t1p5m_ssi, q1p5m_ssi, qcl1p5m_ssi, rh1p5m_ssi
+    type( field_type ), intent(inout) :: t1p5m_land, q1p5m_land, qcl1p5m_land, rh1p5m_land
     type( field_type ), intent(inout) :: ustar_implicit
     type( field_type ), intent(inout) :: u10m, v10m, wind_gust, scale_dep_wind_gust
     type( field_type ), intent(inout) :: fog_fraction, vis_prob_5km
-    type( field_type ), intent(inout) :: dew_point
+    type( field_type ), intent(inout) :: fog_fraction_ssi, fog_fraction_land
+    type( field_type ), intent(inout) :: dew_point, dew_point_ssi, dew_point_land
     type( field_type ), intent(inout) :: visibility_with_precip
     type( field_type ), intent(inout) :: visibility_no_precip
     type( field_type ), intent(inout) :: wspd10m_neut, u10m_neut
@@ -221,11 +255,23 @@ contains
     q1p5m_flag = init_diag(q1p5m, 'surface__q1p5m')
     qcl1p5m_flag = init_diag(qcl1p5m, 'surface__qcl1p5m')
     rh1p5m_flag = init_diag(rh1p5m, 'surface__rh1p5m')
+    t1p5m_ssi_flag = init_diag(t1p5m_ssi, 'surface__t1p5m_ssi')
+    q1p5m_ssi_flag = init_diag(q1p5m_ssi, 'surface__q1p5m_ssi')
+    qcl1p5m_ssi_flag = init_diag(qcl1p5m_ssi, 'surface__qcl1p5m_ssi')
+    rh1p5m_ssi_flag = init_diag(rh1p5m_ssi, 'surface__rh1p5m_ssi')
+    t1p5m_land_flag = init_diag(t1p5m_land, 'surface__t1p5m_land')
+    q1p5m_land_flag = init_diag(q1p5m_land, 'surface__q1p5m_land')
+    qcl1p5m_land_flag = init_diag(qcl1p5m_land, 'surface__qcl1p5m_land')
+    rh1p5m_land_flag = init_diag(rh1p5m_land, 'surface__rh1p5m_land')
     vis_no_precip_flag = init_diag(visibility_no_precip, 'surface__visibility_no_precip')
     vis_with_precip_flag = init_diag(visibility_with_precip, 'surface__visibility_with_precip')
     fog_fraction_flag = init_diag(fog_fraction, 'surface__fog_fraction')
+    fog_fraction_ssi_flag = init_diag(fog_fraction_ssi, 'surface__fog_fraction_ssi')
+    fog_fraction_land_flag = init_diag(fog_fraction_land, 'surface__fog_fraction_land')
     vis_prob_5km_flag = init_diag(vis_prob_5km, 'surface__vis_prob_5km')
     dew_point_flag = init_diag(dew_point, 'surface__dew_point')
+    dew_point_ssi_flag = init_diag(dew_point_ssi, 'surface__dew_point_ssi')
+    dew_point_land_flag = init_diag(dew_point_land, 'surface__dew_point_land')
     u10m_flag = init_diag(u10m, 'surface__u10m', activate=.true.)
     v10m_flag = init_diag(v10m, 'surface__v10m', activate=.true.)
     ustar_implicit_flag = init_diag(ustar_implicit, 'surface__ustar_implicit')
@@ -287,6 +333,18 @@ contains
       if (vis_with_precip_flag .and. .not. vis_no_precip_flag) ignore = &
         init_diag(visibility_no_precip, 'surface__visibility_no_precip', activate=.true.)
     end if
+    ! sea and sea-ice derived diags
+    if (fog_fraction_ssi_flag .or. dew_point_ssi_flag) then
+      if (.not. t1p5m_ssi_flag) ignore = init_diag(t1p5m_ssi, 'surface__t1p5m_ssi', activate=.true.)
+      if (.not. q1p5m_ssi_flag) ignore = init_diag(q1p5m_ssi, 'surface__q1p5m_ssi', activate=.true.)
+      if (.not. qcl1p5m_ssi_flag) ignore = init_diag(qcl1p5m_ssi, 'surface__qcl1p5m_ssi', activate=.true.)
+    end if
+    ! land derived diags
+    if (fog_fraction_land_flag .or. dew_point_land_flag) then
+      if (.not. t1p5m_land_flag) ignore = init_diag(t1p5m_land, 'surface__t1p5m_land', activate=.true.)
+      if (.not. q1p5m_land_flag) ignore = init_diag(q1p5m_land, 'surface__q1p5m_land', activate=.true.)
+      if (.not. qcl1p5m_land_flag) ignore = init_diag(qcl1p5m_land, 'surface__qcl1p5m_land', activate=.true.)
+    end if
 
     if ( subroutine_timers ) call timer("bl_imp_diags")
 
@@ -342,6 +400,14 @@ contains
   !> @param[in]     q1p5m                    1.5m specific humidity
   !> @param[in]     qcl1p5m                  1.5m specific cloud water
   !> @param[in]     rh1p5m                   1.5m relative humidity
+  !> @param[in]     t1p5m_ssi                1.5m temperature over sea and sea-ice
+  !> @param[in]     q1p5m_ssi                1.5m specific humidity over sea and sea-ice
+  !> @param[in]     qcl1p5m_ssi              1.5m specific cloud water over sea and sea-ice
+  !> @param[in]     rh1p5m_ssi               1.5m relative humidity over sea and sea-ice
+  !> @param[in]     t1p5m_land               1.5m temperature over land
+  !> @param[in]     q1p5m_land               1.5m specific humidity over land
+  !> @param[in]     qcl1p5m_land             1.5m specific cloud water over land
+  !> @param[in]     rh1p5m_land              1.5m relative humidity over land
   !> @param[in]     latent_heat              Surface latent heat flux on tiles
   !> @param[in]     grid_latent_heat         Grid mean surface latent heat flux
   !> @param[in]     snomlt_surf_htf          Surface snow melt heat flux
@@ -371,8 +437,12 @@ contains
   !> @param[in,out] dcfl_bl                  BL increment to liquid cloud fraction
   !> @param[in,out] dcff_bl                  BL increment to frozen cloud fraction
   !> @param[in,out] fog_fraction             fog fraction at screen level
+  !> @param[in,out] fog_fraction_ssi         Fog_fraction over sea/sea-ice
+  !> @param[in,out] fog_fraction_land        Fog_fraction over land
   !> @param[in,out] vis_prob_5km             probability of vis below 5km at screen level
   !> @param[in,out] dew_point                dew point temperature at screen level
+  !> @param[in,out] dew_point                Dew point temperature
+  !> @param[in,out] dew_point_ssi            Dew point temperature over sea/sea-ice
   !> @param[in,out] visibility_with_precip   visibility including precipitation at screen level
   !> @param[in,out] visibility_no_precip     visibility excluding precipitation at screen level
 
@@ -393,6 +463,10 @@ contains
                                      dtheta_bl, exner_in_wth, dt_conv,         &
                                      t1p5m_surft, q1p5m_surft,                 &
                                      t1p5m, q1p5m, qcl1p5m, rh1p5m,            &
+                                     t1p5m_ssi, q1p5m_ssi, qcl1p5m_ssi,        &
+                                     rh1p5m_ssi,                               &
+                                     t1p5m_land, q1p5m_land, qcl1p5m_land,     &
+                                     rh1p5m_land,                              &
                                      latent_heat,                              &
                                      grid_latent_heat, snomlt_surf_htf,        &
                                      soil_evap, grid_canopy_evap,              &
@@ -405,7 +479,9 @@ contains
                                      conv_rain, conv_snow, cca_2d,             &
                                      dmv_bl, dmcl_bl, dmci_bl, dbcf_bl,        &
                                      dacf_bl, dcfl_bl, dcff_bl,                &
-                                     fog_fraction, vis_prob_5km, dew_point,    &
+                                     fog_fraction, fog_fraction_ssi,           &
+                                     fog_fraction_land, vis_prob_5km,          &
+                                     dew_point, dew_point_ssi, dew_point_land, &
                                      visibility_with_precip,                   &
                                      visibility_no_precip )
 
@@ -434,6 +510,8 @@ contains
     ! Diagnostics computed within the kernel
     type( field_type ), intent(in)    :: t1p5m_surft, q1p5m_surft
     type( field_type ), intent(in)    :: t1p5m, q1p5m, qcl1p5m, rh1p5m
+    type( field_type ), intent(in)    :: t1p5m_ssi, q1p5m_ssi, qcl1p5m_ssi, rh1p5m_ssi
+    type( field_type ), intent(in)    :: t1p5m_land, q1p5m_land, qcl1p5m_land, rh1p5m_land
     type( field_type ), intent(in)    :: u10m, v10m
     type( field_type ), intent(inout) :: u10m_neut, v10m_neut, wspd10m_neut
     type( field_type ), intent(in)    :: wind10m_neut_w2
@@ -461,12 +539,18 @@ contains
     type( field_type ), intent(inout) :: visibility_with_precip
     type( field_type ), intent(inout) :: visibility_no_precip
     type( field_type ), intent(inout) :: fog_fraction
+    type( field_type ), intent(inout) :: fog_fraction_ssi
+    type( field_type ), intent(inout) :: fog_fraction_land
     type( field_type ), intent(inout) :: vis_prob_5km
     type( field_type ), intent(inout) :: dew_point
+    type( field_type ), intent(inout) :: dew_point_ssi
+    type( field_type ), intent(inout) :: dew_point_land
 
     ! Local variables
     type( field_type ) :: dt_bl, tauz, pseudotauz, du_bl, dv_bl, dw_bl, &
          w10m_neut, u10m2, v10m2
+    type( field_type ) :: land_surface_temperature
+
     logical( l_def ) :: ignore
 
     if ( subroutine_timers ) call timer("bl_imp_diags")
@@ -539,6 +623,13 @@ contains
                                            1, n_surf_tile))
       call grid_surface_temperature%write_field()
     end if
+    land_surface_temperature_flag = init_diag(land_surface_temperature, 'surface__land_surface_temperature')
+    if (land_surface_temperature_flag) then
+      call invoke(weighted_ave_kernel_type(land_surface_temperature,           &
+                                           tile_temperature, tile_fraction,    &
+                                           1, n_land_tile))
+      call land_surface_temperature%write_field()
+    end if
     if (grid_latent_heat_flag) then
       call invoke(weighted_ave_kernel_type(grid_latent_heat,                   &
                                            latent_heat, tile_fraction,         &
@@ -575,6 +666,14 @@ contains
     if (q1p5m_flag) call q1p5m%write_field()
     if (qcl1p5m_flag) call qcl1p5m%write_field()
     if (rh1p5m_flag) call rh1p5m%write_field()
+    if (t1p5m_ssi_flag) call t1p5m_ssi%write_field()
+    if (q1p5m_ssi_flag) call q1p5m_ssi%write_field()
+    if (qcl1p5m_ssi_flag) call qcl1p5m_ssi%write_field()
+    if (rh1p5m_ssi_flag) call rh1p5m_ssi%write_field()
+    if (t1p5m_land_flag) call t1p5m_land%write_field()
+    if (q1p5m_land_flag) call q1p5m_land%write_field()
+    if (qcl1p5m_land_flag) call qcl1p5m_land%write_field()
+    if (rh1p5m_land_flag) call rh1p5m_land%write_field()
     if (u10m_flag) call u10m%write_field()
     if (v10m_flag) call v10m%write_field()
 
@@ -610,8 +709,11 @@ contains
     if (surf_lw_up_flag) call surf_lw_up%write_field()
     if (surf_lw_down_flag) call surf_lw_down%write_field()
 
-    if ( ustar_implicit_flag .or. wind_gust_flag .or. scale_dep_wind_gust_flag .or. vis_no_precip_flag .or. &
-         vis_with_precip_flag .or. fog_fraction_flag .or. vis_prob_5km_flag .or. dew_point_flag) then
+    if ( ustar_implicit_flag .or. wind_gust_flag .or. scale_dep_wind_gust_flag &
+         .or. vis_no_precip_flag .or. vis_with_precip_flag .or.                &
+         fog_fraction_flag .or. fog_fraction_ssi_flag .or.                     &
+         fog_fraction_land_flag .or. vis_prob_5km_flag .or. dew_point_flag     &
+         .or. dew_point_ssi_flag .or. dew_point_land_flag ) then
 
       ! Calculate various extra diagnostics
       call invoke( bl_extra_diags_kernel_type( rho_in_w3, wetrho_in_w3,        &
@@ -620,14 +722,20 @@ contains
                                                exner_in_wth, mci, mr,          &
                                                nr_mphys, ns_mphys, murk,       &
                                                zh, t1p5m, q1p5m, qcl1p5m,      &
+                                               t1p5m_ssi, q1p5m_ssi,           &
+                                               qcl1p5m_ssi,                    &
+                                               t1p5m_land, q1p5m_land,         &
+                                               qcl1p5m_land,                   &
                                                wspd10m, z0m_eff,               &
                                                bl_weight_1dbl,                 &
                                                ls_rain, ls_snow, lsca_2d,      &
                                                conv_rain, conv_snow, cca_2d,   &
                                                ustar_implicit,                 &
                                                wind_gust, scale_dep_wind_gust, &
-                                               fog_fraction, vis_prob_5km,     &
-                                               dew_point,                      &
+                                               fog_fraction, fog_fraction_ssi, &
+                                               fog_fraction_land, vis_prob_5km,&
+                                               dew_point, dew_point_ssi,       &
+                                               dew_point_land,                 &
                                                visibility_with_precip,         &
                                                visibility_no_precip ) )
 
@@ -637,8 +745,12 @@ contains
       if (vis_no_precip_flag) call visibility_no_precip%write_field()
       if (vis_with_precip_flag) call visibility_with_precip%write_field()
       if (fog_fraction_flag) call fog_fraction%write_field()
+      if (fog_fraction_ssi_flag) call fog_fraction_ssi%write_field()
+      if (fog_fraction_land_flag) call fog_fraction_land%write_field()
       if (vis_prob_5km_flag) call vis_prob_5km%write_field()
       if (dew_point_flag) call dew_point%write_field()
+      if (dew_point_ssi_flag) call dew_point_ssi%write_field()
+      if (dew_point_land_flag) call dew_point_land%write_field()
     end if
 
     if ( subroutine_timers ) call timer("bl_imp_diags")

@@ -468,14 +468,27 @@
   <field id="surface__pseudotauy" name="pseudotauy" long_name="surface_northward_wind_pseudo_stress" unit="N m-2" domain_ref="face" />
   <field id="surface__tile_temperature" name="tile_temperature" long_name="surface_tile_temperature" unit="K" domain_ref="face" axis_ref="surface_tiles" />
   <field id="surface__grid_surface_temperature" name="grid_surface_temperature" long_name="grid_surface_temperature" unit="K" domain_ref="face" />
+  <field id="surface__land_surface_temperature" name="land_surface_temperature" long_name="land_surface_temperature" unit="K" domain_ref="face" />
   <field id="surface__t1p5m_surft" name="t1p5m_surft" long_name="land_tile_screen_level_temperature" unit="K" domain_ref="face" axis_ref="surface_tiles" />
   <field id="surface__t1p5m" name="t1p5m" long_name="temperature_at_screen_level" unit="K" domain_ref="face" />
+  <field id="surface__t1p5m_ssi" name="t1p5m_ssi" long_name="temperature_at_screen_level_over_sea_and_sea_ice" unit="K" domain_ref="face" />
+  <field id="surface__t1p5m_land" name="t1p5m_land" long_name="temperature_at_screen_level_over_land" unit="K" domain_ref="face" />
   <field id="surface__q1p5m_surft" name="q1p5m_surft" long_name="land_tile_screen_level_specific_humidity" unit="kg/kg" domain_ref="face" axis_ref="surface_tiles" />
   <field id="surface__q1p5m" name="q1p5m" long_name="specific_humidity_at_screen_level" unit="kg kg-1" domain_ref="face" />
+  <field id="surface__q1p5m_ssi" name="q1p5m_ssi" long_name="specific_humidity_at_screen_level_over_sea_and_sea_ice" unit="kg kg-1" domain_ref="face" />
+  <field id="surface__q1p5m_land" name="q1p5m_land" long_name="specific_humidity_at_screen_level_over_land" unit="kg kg-1" domain_ref="face" />
   <field id="surface__qcl1p5m" name="qcl1p5m" long_name="specific_cloud_water_at_screen_level" unit="kg kg-1" domain_ref="face" />
+  <field id="surface__qcl1p5m_ssi" name="qcl1p5m_ssi" long_name="specific_cloud_water_at_screen_level_over_sea_and_sea_ice" unit="kg kg-1" domain_ref="face" />
+  <field id="surface__qcl1p5m_land" name="qcl1p5m_land" long_name="specific_cloud_water_at_screen_level_over_land" unit="kg kg-1" domain_ref="face" />
   <field id="surface__rh1p5m" name="rh1p5m" long_name="relative_humidity_at_screen_level" unit="1" domain_ref="face" />
+  <field id="surface__rh1p5m_ssi" name="rh1p5m_ssi" long_name="relative_humidity_at_screen_level_over_sea_and_sea_ice" unit="1" domain_ref="face" />
+  <field id="surface__rh1p5m_land" name="rh1p5m_land" long_name="relative_humidity_at_screen_level_over_land" unit="1" domain_ref="face" />
   <field id="surface__dew_point" name="dew_point" long_name="dew_point_temperature_at_screen_level" unit="K" domain_ref="face" />
+  <field id="surface__dew_point_ssi" name="dew_point_ssi" long_name="dew_point_temperature_at_screen_level_over_sea_and_sea_ice" unit="K" domain_ref="face" />
+  <field id="surface__dew_point_land" name="dew_point_land" long_name="dew_point_temperature_at_screen_level_over_land" unit="K" domain_ref="face" />
   <field id="surface__fog_fraction" name="fog_fraction" long_name="fog_fraction_at_screen_level" unit="1" domain_ref="face" />
+  <field id="surface__fog_fraction_ssi" name="fog_fraction_ssi" long_name="fog_fraction_at_screen_level_over_sea_and_sea_ice" unit="1" domain_ref="face" />
+  <field id="surface__fog_fraction_land" name="fog_fraction_land" long_name="fog_fraction_at_screen_level_over_land" unit="1" domain_ref="face" />
   <field id="surface__vis_prob_5km" name="vis_prob_5km" long_name="probability_visibility_below_5km_at_screen_level" unit="1" domain_ref="face" />
   <field id="surface__visibility_no_precip" name="visibility_no_precip" long_name="visibility_excluding precipitation_at_screen_level" standard_name="visibility_in_air" unit="m" domain_ref="face" />
   <field id="surface__visibility_with_precip" name="visibility_with_precip" long_name="visibility_including_precipitation_at_screen_level" standard_name="visibility_in_air" unit="m" domain_ref="face" />

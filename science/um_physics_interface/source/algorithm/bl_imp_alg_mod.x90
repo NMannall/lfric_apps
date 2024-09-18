@@ -241,6 +241,8 @@ contains
     type( field_type ) :: du_conv_w2, dw_conv
     type( field_type ) :: dissip, diss_u, diss_v, diss_w
     type( field_type ) :: t1p5m, q1p5m, qcl1p5m, rh1p5m
+    type( field_type ) :: t1p5m_ssi, q1p5m_ssi, qcl1p5m_ssi, rh1p5m_ssi
+    type( field_type ) :: t1p5m_land, q1p5m_land, qcl1p5m_land, rh1p5m_land
     type( field_type ) :: t1p5m_surft, q1p5m_surft
     type( field_type ) :: wind10m_w2, u10m, v10m, w10m, u10m2, v10m2
     type( field_type ) :: wind10m_neut_w2, pseudotau_w2
@@ -249,6 +251,8 @@ contains
     type( field_type ) :: wind_gust, scale_dep_wind_gust
     type( field_type ) :: visibility_with_precip, visibility_no_precip
     type( field_type ) :: fog_fraction, vis_prob_5km, dew_point
+    type( field_type ) :: fog_fraction_ssi, fog_fraction_land
+    type( field_type ) :: dew_point_ssi, dew_point_land
     type( field_type ) :: pseudotaux, pseudotauy
     type( field_type ) :: dmv_bl, dmcl_bl, dmci_bl, dbcf_bl
     type( field_type ) :: dacf_bl, dcfl_bl, dcff_bl
@@ -426,8 +430,12 @@ contains
                                      dbcf_bl, dacf_bl,                         &
                                      dcfl_bl, dcff_bl,                         &
                                      t1p5m_surft, q1p5m_surft,                 &
-                                     t1p5m, q1p5m, qcl1p5m, rh1p5m, u10m, v10m,&
-                                     ustar_implicit,                           &
+                                     t1p5m, q1p5m, qcl1p5m, rh1p5m,            &
+                                     t1p5m_ssi, q1p5m_ssi, qcl1p5m_ssi,        &
+                                     rh1p5m_ssi,                               &
+                                     t1p5m_land, q1p5m_land, qcl1p5m_land,     &
+                                     rh1p5m_land,                              &
+                                     u10m, v10m, ustar_implicit,               &
                                      wind_gust, scale_dep_wind_gust,           &
                                      wspd10m_neut, u10m_neut,                  &
                                      v10m_neut, taux, tauy,                    &
@@ -439,7 +447,9 @@ contains
                                      surf_sw_net, surf_radnet,                 &
                                      surf_lw_up, surf_lw_down,                 &
                                      grid_surface_temperature,                 &
-                                     fog_fraction, vis_prob_5km, dew_point,    &
+                                     fog_fraction, fog_fraction_ssi,           &
+                                     fog_fraction_land, vis_prob_5km,          &
+                                     dew_point, dew_point_ssi, dew_point_land, &
                                      visibility_with_precip,                   &
                                      visibility_no_precip)
 
@@ -554,7 +564,10 @@ contains
                                          soil_moist_avail, bl_type_ind, qw, tl,&
                                          dqw1, dtl1, ct_ctq1, surf_ht_flux,    &
                                          t1p5m_surft, q1p5m_surft, t1p5m,      &
-                                         q1p5m, qcl1p5m, rh1p5m, latent_heat,  &
+                                         q1p5m, qcl1p5m, rh1p5m, t1p5m_ssi,    &
+                                         q1p5m_ssi, qcl1p5m_ssi, rh1p5m_ssi,   &
+                                         t1p5m_land, q1p5m_land, qcl1p5m_land, &
+                                         rh1p5m_land, latent_heat,             &
                                          snomlt_surf_htf, soil_evap,           &
                                          soil_surf_ht_flux, surf_sw_net,       &
                                         surf_radnet, surf_lw_up, surf_lw_down, &
@@ -636,7 +649,9 @@ contains
                                    dtheta_bl, exner_in_wth, dt_conv,           &
                                    t1p5m_surft, q1p5m_surft,                   &
                                    t1p5m, q1p5m, qcl1p5m, rh1p5m,              &
-                                   latent_heat,                                &
+                                   t1p5m_ssi, q1p5m_ssi, qcl1p5m_ssi,          &
+                                   rh1p5m_ssi, t1p5m_land, q1p5m_land,         &
+                                   qcl1p5m_land, rh1p5m_land, latent_heat,     &
                                    grid_latent_heat, snomlt_surf_htf,          &
                                    soil_evap, grid_canopy_evap,                &
                                    grid_sublimation, surf_ht_flux,             &
@@ -648,7 +663,9 @@ contains
                                    conv_rain, conv_snow, cca_2d,               &
                                    dmv_bl, dmcl_bl, dmci_bl, dbcf_bl,          &
                                    dacf_bl, dcfl_bl, dcff_bl,                  &
-                                   fog_fraction, vis_prob_5km, dew_point,      &
+                                   fog_fraction, fog_fraction_ssi,             &
+                                   fog_fraction_land, vis_prob_5km, dew_point, &
+                                   dew_point_ssi, dew_point_land,              &
                                    visibility_with_precip,                     &
                                    visibility_no_precip )
         end if

@@ -40,7 +40,7 @@ module jules_imp_kernel_mod
   !>
   type, public, extends(kernel_type) :: jules_imp_kernel_type
     private
-    type(arg_type) :: meta_args(76) = (/                                         &
+    type(arg_type) :: meta_args(84) = (/                                          &
          arg_type(GH_SCALAR, GH_INTEGER, GH_READ),                                &! outer
          arg_type(GH_SCALAR, GH_INTEGER, GH_READ),                                &! loop
          arg_type(GH_FIELD,  GH_REAL,    GH_READ,      W3),                       &! wetrho_in_w3
@@ -108,6 +108,14 @@ module jules_imp_kernel_mod
          arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! q1p5m
          arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! qcl1p5m
          arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! rh1p5m
+         arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! t1p5m_ssi
+         arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! q1p5m_ssi
+         arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! qcl1p5m_ssi
+         arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! rh1p5m_ssi
+         arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! t1p5m_land
+         arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! q1p5m_land
+         arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! qcl1p5m_land
+         arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! rh1p5m_land
          arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_2),&! latent_heat
          arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! snomlt_surf_htf
          arg_type(GH_FIELD,  GH_REAL,    GH_WRITE,     ANY_DISCONTINUOUS_SPACE_1),&! soil_evap
@@ -195,6 +203,14 @@ contains
   !> @param[in,out] q1p5m                Diagnostic: 1.5m specific humidity
   !> @param[in,out] qcl1p5m              Diagnostic: 1.5m specific cloud water
   !> @param[in,out] rh1p5m               Diagnostic: 1.5m relative humidity
+  !> @param[in,out] t1p5m_ssi            Diagnostic: 1.5m temperature over sea and sea-ice
+  !> @param[in,out] q1p5m_ssi            Diagnostic: 1.5m specific humidity over sea and sea-ice
+  !> @param[in,out] qcl1p5m_ssi          Diagnostic: 1.5m specific cloud water over sea and sea-ice
+  !> @param[in,out] rh1p5m_ssi           Diagnostic: 1.5m relative humidity over sea and sea-ice
+  !> @param[in,out] t1p5m_land           Diagnostic: 1.5m temperature over land
+  !> @param[in,out] q1p5m_land           Diagnostic: 1.5m specific humidity over land
+  !> @param[in,out] qcl1p5m_land         Diagnostic: 1.5m specific cloud water over land
+  !> @param[in,out] rh1p5m_land          Diagnostic: 1.5m relative humidity over land
   !> @param[in,out] latent_heat          Diagnostic: Surface latent heat flux
   !> @param[in,out] snomlt_surf_htf      Diagnostic: Grid mean suface snowmelt heat flux
   !> @param[in,out] soil_evap            Diagnostic: Grid mean evapotranspiration from the soil
@@ -289,6 +305,10 @@ contains
                             ct_ctq1_2d, surf_ht_flux,           &
                             t1p5m_surft, q1p5m_surft,           &
                             t1p5m, q1p5m, qcl1p5m, rh1p5m,      &
+                            t1p5m_ssi, q1p5m_ssi,               &
+                            qcl1p5m_ssi, rh1p5m_ssi,            &
+                            t1p5m_land, q1p5m_land,             &
+                            qcl1p5m_land, rh1p5m_land,          &
                             latent_heat, snomlt_surf_htf,       &
                             soil_evap,                          &
                             soil_surf_ht_flux,                  &
@@ -474,6 +494,10 @@ contains
     real(kind=r_def), pointer, intent(inout) :: q1p5m_surft(:)
     real(kind=r_def), pointer, intent(inout) :: t1p5m(:), q1p5m(:)
     real(kind=r_def), pointer, intent(inout) :: qcl1p5m(:), rh1p5m(:)
+    real(kind=r_def), pointer, intent(inout) :: t1p5m_ssi(:), q1p5m_ssi(:)
+    real(kind=r_def), pointer, intent(inout) :: qcl1p5m_ssi(:), rh1p5m_ssi(:)
+    real(kind=r_def), pointer, intent(inout) :: t1p5m_land(:), q1p5m_land(:)
+    real(kind=r_def), pointer, intent(inout) :: qcl1p5m_land(:), rh1p5m_land(:)
     real(kind=r_def), pointer, intent(inout) :: latent_heat(:)
     real(kind=r_def), pointer, intent(inout) :: snomlt_surf_htf(:)
     real(kind=r_def), pointer, intent(inout) :: soil_evap(:)
@@ -561,6 +585,9 @@ contains
 
     ! field on surface tiles and soil levels
     real(r_um), dimension(:,:,:), allocatable :: wt_ext_surft
+
+    ! fields on all points
+    real(r_um), dimension(:,:), allocatable :: t1p5m_land_loc, q1p5m_land_loc
 
     ! parameters for new BL solver
     real(r_um) :: pnonl,p1,p2
@@ -1293,25 +1320,38 @@ contains
           end do
         end if
 
+        ! Convert fields to specific quantities, as happens in imp_solver in UM
         if (sf_diag%sq1p5) then
           do i = 1, seg_len
             sf_diag%q1p5m(i,1)=sf_diag%q1p5m(i,1)/ &
                  (1.0_r_def+sf_diag%q1p5m(i,1)+qcf_latest(i,1))
+            sf_diag%q1p5m_ssi(i,1)=sf_diag%q1p5m_ssi(i,1)/ &
+                 (1.0_r_def+sf_diag%q1p5m_ssi(i,1)+qcf_latest(i,1))
+          end do
+          do n = 1, ntiles
+            do m = 1, ainfo%surft_pts(n)
+              l = ainfo%surft_index(m,n)
+              i = ainfo%land_index(l)
+
+              sf_diag%q1p5m_surft(l,n) = sf_diag%q1p5m_surft(l,n)/             &
+                  (1.0_r_def + sf_diag%q1p5m_surft(l,n)+qcf_latest(i,1) )
+            end do
           end do
         end if
 
+        do i = 1, seg_len
+          ! Dummy values as unused in ls_cld for lowest level
+          cumulus(i,1) = .false.
+          ntml(i,1) = 1_i_def
+          ! Critical relative humidity
+          rhcpt(i,1) = rh_crit_wth(map_wth(1,i) + 1)
+        end do
+
+        ! Grid box mean screen level diagnostics
         if (.not. associated(t1p5m, empty_real_data) .or.                      &
              .not. associated(q1p5m, empty_real_data) .or.                     &
              .not. associated(rh1p5m, empty_real_data) .or.                    &
              .not. associated(qcl1p5m, empty_real_data) ) then
-
-          do i = 1, seg_len
-            ! Dummy values as unused in ls_cld for lowest level
-            cumulus(i,1) = .false.
-            ntml(i,1) = 1_i_def
-            ! Critical relative humidity
-            rhcpt(i,1) = rh_crit_wth(map_wth(1,i) + 1)
-          end do
 
           call ls_cld(                                                         &
                forcing%pstar_ij, rhcpt, 1, 1, seg_len, 1, ntml, cumulus,       &
@@ -1342,6 +1382,96 @@ contains
             rh1p5m(map_2d(1,i)) = max(0.0_r_def, sf_diag%q1p5m(i,1)) * 100.0_r_def / work_2d_1(i,1)
           end do
         end if
+
+        ! Sea and sea-ice screen level diagnostics
+        if (.not. associated(t1p5m_ssi, empty_real_data) .or.                  &
+             .not. associated(q1p5m_ssi, empty_real_data) .or.                 &
+             .not. associated(rh1p5m_ssi, empty_real_data) .or.                &
+             .not. associated(qcl1p5m_ssi, empty_real_data) ) then
+
+          call ls_cld(                                                         &
+               forcing%pstar_ij, rhcpt, 1, 1, seg_len, 1, ntml, cumulus,       &
+               .false., sf_diag%t1p5m_ssi, work_2d_1, sf_diag%q1p5m_ssi,       &
+               qcf_latest, qcl1p5m_loc, work_2d_2, work_2d_3, error_code )
+        end if
+
+        if (.not. associated(t1p5m_ssi, empty_real_data) ) then
+          do i = 1, seg_len
+            t1p5m_ssi(map_2d(1,i)) = sf_diag%t1p5m_ssi(i,1)
+          end do
+        end if
+        if (.not. associated(q1p5m_ssi, empty_real_data) ) then
+          do i = 1, seg_len
+            q1p5m_ssi(map_2d(1,i)) = sf_diag%q1p5m_ssi(i,1)
+          end do
+        end if
+        if (.not. associated(qcl1p5m_ssi, empty_real_data) ) then
+          do i = 1, seg_len
+            qcl1p5m_ssi(map_2d(1,i)) = qcl1p5m_loc(i,1)
+          end do
+        end if
+
+        if (.not. associated(rh1p5m_ssi, empty_real_data) ) then
+          ! qsat needed since q1p5m always a specific humidity
+          call qsat(work_2d_1,sf_diag%t1p5m_ssi,forcing%pstar_ij,pdims%i_end,pdims%j_end)
+          do i = 1, seg_len
+            rh1p5m_ssi(map_2d(1,i)) = max(0.0_r_def, sf_diag%q1p5m_ssi(i,1)) * 100.0_r_def / work_2d_1(i,1)
+          end do
+        end if
+
+        ! Land screen level diagnostics
+        if (.not. associated(t1p5m_land, empty_real_data) .or.                 &
+             .not. associated(q1p5m_land, empty_real_data) .or.                &
+             .not. associated(rh1p5m_land, empty_real_data) .or.               &
+             .not. associated(qcl1p5m_land, empty_real_data) ) then
+
+          allocate(t1p5m_land_loc(seg_len,1))
+          allocate(q1p5m_land_loc(seg_len,1))
+          t1p5m_land_loc = 0.0_r_def
+          q1p5m_land_loc = 0.0_r_def
+          do n = 1, n_land_tile
+            do l = 1, land_field
+              t1p5m_land_loc(ainfo%land_index(l),1) = &
+                   t1p5m_land_loc(ainfo%land_index(l),1) + &
+                   ainfo%frac_surft(l,n)*sf_diag%t1p5m_surft(l, n)
+              q1p5m_land_loc(ainfo%land_index(l),1) = &
+                   q1p5m_land_loc(ainfo%land_index(l),1) + &
+                   ainfo%frac_surft(l,n)*sf_diag%q1p5m_surft(l, n)
+            end do
+          end do
+
+          call ls_cld(                                                         &
+               forcing%pstar_ij, rhcpt, 1, 1, seg_len, 1, ntml, cumulus,       &
+               .false., t1p5m_land_loc, work_2d_1, q1p5m_land_loc,             &
+               qcf_latest, qcl1p5m_loc, work_2d_2, work_2d_3, error_code )
+        end if
+
+        if (.not. associated(t1p5m_land, empty_real_data) ) then
+          do i = 1, seg_len
+            t1p5m_land(map_2d(1,i)) = t1p5m_land_loc(i,1)
+          end do
+        end if
+        if (.not. associated(q1p5m_land, empty_real_data) ) then
+          do i = 1, seg_len
+            q1p5m_land(map_2d(1,i)) = q1p5m_land_loc(i,1)
+          end do
+        end if
+        if (.not. associated(qcl1p5m_land, empty_real_data) ) then
+          do i = 1, seg_len
+            qcl1p5m_land(map_2d(1,i)) = qcl1p5m_loc(i,1)
+          end do
+        end if
+
+        if (.not. associated(rh1p5m_land, empty_real_data) ) then
+          ! qsat needed since q1p5m always a specific humidity
+          call qsat(work_2d_1,t1p5m_land_loc,forcing%pstar_ij,pdims%i_end,pdims%j_end)
+          do i = 1, seg_len
+            rh1p5m_land(map_2d(1,i)) = max(0.0_r_def, q1p5m_land_loc(i,1)) * 100.0_r_def / work_2d_1(i,1)
+          end do
+        end if
+
+        if (allocated(t1p5m_land_loc)) deallocate(t1p5m_land_loc)
+        if (allocated(q1p5m_land_loc)) deallocate(q1p5m_land_loc)
 
         if (.not. associated(t1p5m_surft, empty_real_data) ) then
           do n = 1, n_land_tile

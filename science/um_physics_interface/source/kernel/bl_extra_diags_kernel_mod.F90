@@ -25,7 +25,7 @@ module bl_extra_diags_kernel_mod
   !>
   type, public, extends(kernel_type) :: bl_extra_diags_kernel_type
     private
-    type(arg_type) :: meta_args(33) = (/                                  &
+    type(arg_type) :: meta_args(43) = (/                                  &
          arg_type(GH_FIELD, GH_REAL, GH_READ, W3),                        & ! rho_in_w3
          arg_type(GH_FIELD, GH_REAL, GH_READ, W3),                        & ! wetrho_in_w3
          arg_type(GH_FIELD, GH_REAL, GH_READ, W3),                        & ! heat_flux_bl
@@ -42,6 +42,12 @@ module bl_extra_diags_kernel_mod
          arg_type(GH_FIELD, GH_REAL, GH_READ, ANY_DISCONTINUOUS_SPACE_1), & ! t1p5m
          arg_type(GH_FIELD, GH_REAL, GH_READ, ANY_DISCONTINUOUS_SPACE_1), & ! q1p5m
          arg_type(GH_FIELD, GH_REAL, GH_READ, ANY_DISCONTINUOUS_SPACE_1), & ! qcl1p5m
+         arg_type(GH_FIELD, GH_REAL, GH_READ, ANY_DISCONTINUOUS_SPACE_1), & ! t1p5m_ssi
+         arg_type(GH_FIELD, GH_REAL, GH_READ, ANY_DISCONTINUOUS_SPACE_1), & ! q1p5m_ssi
+         arg_type(GH_FIELD, GH_REAL, GH_READ, ANY_DISCONTINUOUS_SPACE_1), & ! qcl1p5m_ssi
+         arg_type(GH_FIELD, GH_REAL, GH_READ, ANY_DISCONTINUOUS_SPACE_1), & ! t1p5m_land
+         arg_type(GH_FIELD, GH_REAL, GH_READ, ANY_DISCONTINUOUS_SPACE_1), & ! q1p5m_land
+         arg_type(GH_FIELD, GH_REAL, GH_READ, ANY_DISCONTINUOUS_SPACE_1), & ! qcl1p5m_land
          arg_type(GH_FIELD, GH_REAL, GH_READ, ANY_DISCONTINUOUS_SPACE_1), & ! wspd10m
          arg_type(GH_FIELD, GH_REAL, GH_READ, ANY_DISCONTINUOUS_SPACE_1), & ! z0m_eff
          arg_type(GH_FIELD, GH_REAL, GH_READ, ANY_DISCONTINUOUS_SPACE_1), & ! bl_weight_1dbl
@@ -55,8 +61,12 @@ module bl_extra_diags_kernel_mod
          arg_type(GH_FIELD, GH_REAL, GH_WRITE, ANY_DISCONTINUOUS_SPACE_1), & ! wind_gust
          arg_type(GH_FIELD, GH_REAL, GH_WRITE, ANY_DISCONTINUOUS_SPACE_1), & ! scale_dep_wind_gust
          arg_type(GH_FIELD, GH_REAL, GH_WRITE, ANY_DISCONTINUOUS_SPACE_1), & ! fog_fraction
+         arg_type(GH_FIELD, GH_REAL, GH_WRITE, ANY_DISCONTINUOUS_SPACE_1), & ! fog_fraction_ssi
+         arg_type(GH_FIELD, GH_REAL, GH_WRITE, ANY_DISCONTINUOUS_SPACE_1), & ! fog_fraction_land
          arg_type(GH_FIELD, GH_REAL, GH_WRITE, ANY_DISCONTINUOUS_SPACE_1), & ! vis_prob_5km
          arg_type(GH_FIELD, GH_REAL, GH_WRITE, ANY_DISCONTINUOUS_SPACE_1), & ! dew_point
+         arg_type(GH_FIELD, GH_REAL, GH_WRITE, ANY_DISCONTINUOUS_SPACE_1), & ! dew_point_ssi
+         arg_type(GH_FIELD, GH_REAL, GH_WRITE, ANY_DISCONTINUOUS_SPACE_1), & ! dew_point_land
          arg_type(GH_FIELD, GH_REAL, GH_WRITE, ANY_DISCONTINUOUS_SPACE_1), & ! visibility_with_precip
          arg_type(GH_FIELD, GH_REAL, GH_WRITE, ANY_DISCONTINUOUS_SPACE_1)  & ! visibility_no_precip
                                       /)
@@ -88,6 +98,12 @@ contains
   !> @param[in]     t1p5m                  Diagnostic: 1.5m temperature
   !> @param[in]     q1p5m                  Diagnostic: 1.5m specific humidity
   !> @param[in]     qcl1p5m                Diagnostic: 1.5m specific cloud water content
+  !> @param[in]     t1p5m_ssi              Diagnostic: 1.5m temperature over sea and sea-ice
+  !> @param[in]     q1p5m_ssi              Diagnostic: 1.5m specific humidity over sea and sea-ice
+  !> @param[in]     qcl1p5m_ssi            Diagnostic: 1.5m specific cloud water over sea and sea-ice
+  !> @param[in]     t1p5m_land             Diagnostic: 1.5m temperature over land
+  !> @param[in]     q1p5m_land             Diagnostic: 1.5m specific humidity over land
+  !> @param[in]     qcl1p5m_land           Diagnostic: 1.5m specific cloud water over land
   !> @param[in]     wspd10m                Windspeed at 10m
   !> @param[in]     z0m_eff                Effective roughness length
   !> @param[in]     bl_weight_1dbl         Blending weight to 1D BL scheme in the BL
@@ -101,8 +117,12 @@ contains
   !> @param[in,out] wind_gust              Wind gust
   !> @param[in,out] scale_dep_wind_gust    Scale dependent wind gust
   !> @param[in,out] fog_fraction           Fog_fraction
+  !> @param[in,out] fog_fraction_ssi       Fog_fraction over sea/sea-ice
+  !> @param[in,out] fog_fraction_land      Fog_fraction over land
   !> @param[in,out] vis_prob_5km           vis_prob_5km
   !> @param[in,out] dew_point              Dew point temperature
+  !> @param[in,out] dew_point_ssi          Dew point temperature over sea/sea-ice
+  !> @param[in,out] dew_point_land         Dew point temperature over land
   !> @param[in,out] visibility_with_precip Visibility with precip included
   !> @param[in,out] visibility_no_precip   Visibility without including precip
   !> @param[in]     ndf_w3                 Number of degrees of freedom per cell for density space
@@ -126,6 +146,9 @@ contains
                                   nr_mphys, ns_mphys, murk, &
                                   zh,                       &
                                   t1p5m, q1p5m, qcl1p5m,    &
+                                  t1p5m_ssi, q1p5m_ssi,     &
+                                  qcl1p5m_ssi, t1p5m_land,  &
+                                  q1p5m_land, qcl1p5m_land, &
                                   wspd10m,                  &
                                   z0m_eff, bl_weight_1dbl,  &
                                   ls_rain_2d, ls_snow_2d,   &
@@ -135,7 +158,11 @@ contains
                                   ustar_implicit, wind_gust,&
                                   scale_dep_wind_gust,      &
                                   fog_fraction,             &
+                                  fog_fraction_ssi,         &
+                                  fog_fraction_land,        &
                                   vis_prob_5km, dew_point,  &
+                                  dew_point_ssi,            &
+                                  dew_point_land,           &
                                   visibility_with_precip,   &
                                   visibility_no_precip,     &
                                   ndf_w3,                   &
@@ -198,11 +225,15 @@ contains
     real(kind=r_def), intent(in), dimension(undf_2d)    :: conv_snow_2d
     real(kind=r_def), intent(in), dimension(undf_2d)    :: cca_2d_in
     real(kind=r_def), intent(in),    pointer :: t1p5m(:), q1p5m(:), qcl1p5m(:)
+    real(kind=r_def), intent(in),    pointer :: t1p5m_ssi(:), q1p5m_ssi(:), qcl1p5m_ssi(:)
+    real(kind=r_def), intent(in),    pointer :: t1p5m_land(:), q1p5m_land(:), qcl1p5m_land(:)
     real(kind=r_def), intent(in),    pointer :: wspd10m(:), z0m_eff(:)
     real(kind=r_def), intent(inout), pointer :: ustar_implicit(:)
     real(kind=r_def), intent(inout), pointer :: wind_gust(:), scale_dep_wind_gust(:)
     real(kind=r_def), intent(inout), pointer :: fog_fraction(:), vis_prob_5km(:)
+    real(kind=r_def), intent(inout), pointer :: fog_fraction_ssi(:), fog_fraction_land(:)
     real(kind=r_def), intent(inout), pointer :: dew_point(:)
+    real(kind=r_def), intent(inout), pointer :: dew_point_ssi(:), dew_point_land(:)
     real(kind=r_def), intent(inout), pointer :: visibility_with_precip(:)
     real(kind=r_def), intent(inout), pointer :: visibility_no_precip(:)
 
@@ -288,8 +319,12 @@ contains
     if (.not. associated(visibility_no_precip, empty_real_data)   .or.       &
         .not. associated(visibility_with_precip, empty_real_data) .or.       &
         .not. associated(fog_fraction, empty_real_data)           .or.       &
+        .not. associated(fog_fraction_ssi, empty_real_data)       .or.       &
+        .not. associated(fog_fraction_land, empty_real_data)      .or.       &
         .not. associated(vis_prob_5km, empty_real_data)           .or.       &
-        .not. associated(dew_point, empty_real_data) ) then
+        .not. associated(dew_point, empty_real_data)              .or.       &
+        .not. associated(dew_point_ssi, empty_real_data)          .or.       &
+        .not. associated(dew_point_land, empty_real_data) ) then
       ! surface pressure
       p_star(1,1)    = p_zero*(exner_in_wth(map_wth(1) + 0))**(1.0_r_def/kappa)
       ! level 1 of aerosol (using the standard default of 10 for now)
@@ -378,6 +413,64 @@ contains
         dew_pnt(1,1) = 0.0_r_def  ! no water
       end if
       dew_point(map_2d(1)) = dew_pnt(1,1)
+    end if
+
+    ! sea and sea-ice diagnostics
+    if (.not. associated(fog_fraction_ssi, empty_real_data)           .or.       &
+        .not. associated(dew_point_ssi, empty_real_data) ) then
+      ! copy of screen variables
+      t1p5m_loc(1,1)   = t1p5m_ssi(map_2d(1))
+      q1p5m_loc(1,1)   = q1p5m_ssi(map_2d(1))
+      qcl1p5m_loc(1,1) = qcl1p5m_ssi(map_2d(1))
+    end if
+
+    if ( .not. associated(fog_fraction_ssi, empty_real_data) ) then
+      do k = 1, 1
+        vis_threshold(1,1,1,k)=vis_thresh(k)
+      end do
+      call fog_fr( p_star, rhcrit, 1, 1,                                       &
+                   t1p5m_loc, aerosol1, murk_visibility,                       &
+                   q1p5m_loc, qcl1p5m_loc,                                     &
+                   vis_threshold, pvis, 1 )
+      fog_fraction_ssi(map_2d(1)) = pvis(1,1,fog_thres)
+    end if
+
+    if ( .not. associated(dew_point_ssi, empty_real_data) ) then
+      if (q1p5m_loc(1,1) > mprog_min) then
+        call dewpnt(q1p5m_loc, p_star, t1p5m_loc, 1, dew_pnt)
+      else
+        dew_pnt(1,1) = 0.0_r_def  ! no water
+      end if
+      dew_point_ssi(map_2d(1)) = dew_pnt(1,1)
+    end if
+
+    ! land diagnostics
+    if (.not. associated(fog_fraction_land, empty_real_data)           .or.    &
+        .not. associated(dew_point_land, empty_real_data) ) then
+      ! copy of screen variables
+      t1p5m_loc(1,1)   = t1p5m_land(map_2d(1))
+      q1p5m_loc(1,1)   = q1p5m_land(map_2d(1))
+      qcl1p5m_loc(1,1) = qcl1p5m_land(map_2d(1))
+    end if
+
+    if ( .not. associated(fog_fraction_land, empty_real_data) ) then
+      do k = 1, 1
+        vis_threshold(1,1,1,k)=vis_thresh(k)
+      end do
+      call fog_fr( p_star, rhcrit, 1, 1,                                       &
+                   t1p5m_loc, aerosol1, murk_visibility,                       &
+                   q1p5m_loc, qcl1p5m_loc,                                     &
+                   vis_threshold, pvis, 1 )
+      fog_fraction_land(map_2d(1)) = pvis(1,1,fog_thres)
+    end if
+
+    if ( .not. associated(dew_point_land, empty_real_data) ) then
+      if (q1p5m_loc(1,1) > mprog_min) then
+        call dewpnt(q1p5m_loc, p_star, t1p5m_loc, 1, dew_pnt)
+      else
+        dew_pnt(1,1) = 0.0_r_def  ! no water
+      end if
+      dew_point_land(map_2d(1)) = dew_pnt(1,1)
     end if
 
   end subroutine bl_extra_diags_code
