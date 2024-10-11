@@ -15,9 +15,10 @@ module gungho_model_mod
   use driver_io_mod,              only : init_io, final_io, &
                                          filelist_populator
   use driver_mesh_mod,            only : init_mesh
-  use check_configuration_mod,    only : get_required_stencil_depth, &
-                                         check_any_shifted,          &
-                                         check_any_wt_eqn_conservative
+  use check_configuration_mod,    only : get_required_stencil_depth,    &
+                                         check_any_shifted,             &
+                                         check_any_wt_eqn_conservative, &
+                                         check_configuration
   use energy_correction_config_mod, only : encorr_usage, encorr_usage_none
   use conservation_algorithm_mod, only : conservation_algorithm
   use constants_mod,              only : i_def, r_def, l_def, &
@@ -409,6 +410,8 @@ contains
     !=======================================================================
     ! 0.0 Extract configuration variables
     !=======================================================================
+    call check_configuration()
+
     base_mesh_nml   => modeldb%configuration%get_namelist('base_mesh')
     formulation_nml => modeldb%configuration%get_namelist('formulation')
     extrusion_nml   => modeldb%configuration%get_namelist('extrusion')

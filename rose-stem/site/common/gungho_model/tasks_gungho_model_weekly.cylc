@@ -111,7 +111,7 @@
         "opt_confs": ["earth-like"],
         "resolution": "C24_MG",
         "DT": 3600,
-        "mpi_parts": 6,
+        "mpi_parts": 54,
         "tsteps": 28800,
         "crun": 3,
         "crun_compare": false,
@@ -156,10 +156,11 @@
         "opt_confs": ["held-suarez"],
         "resolution": "C24_MG",
         "DT": 3600,
-        "mpi_parts": 6,
+        "mpi_parts": 54,
         "tsteps": 28800,
         "crun": 3,
         "crun_compare": false,
+        "wallclock": 180,
         "kgo_checks": [],
         "plot_str": "plot_zonal.py $NODAL_DATA_DIR/lfric_averages.nc $PLOT_DIR held-suarez dcmip 30 31"
     }) %}
@@ -175,10 +176,11 @@
         "crun": 3,
         "crun_compare": false,
         "kgo_checks": [],
+        "wallclock": 180,
         "plot_str": "plot_zonal.py $NODAL_DATA_DIR/lfric_averages.nc $PLOT_DIR held-suarez dcmip 30 31"
     }) %}
 
-{% elif task_ns.conf_name == "moist_baroclinic_orog-C24_MG" %}
+{% elif task_ns.conf_name == "moist_baroclinic_orog-C48_MG" %}
 
     {% do task_dict.update({
         "opt_confs": ["moist_baroclinic_orog"],
@@ -194,19 +196,19 @@
         "plot_str": "baroclinic.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR dcmip moist m_cl:m_v:u_in_w2h:v_in_w2h:w_in_wth:surface_pressure_temperature"
     }) %}
 
-{% elif task_ns.conf_name == "robert-moist-smag-1300-BiP200x4-5x5" %}
+{% elif task_ns.conf_name == "robert-moist-smag-l300-BiP200x4-5x5" %}
 
     {% do task_dict.update({
-        "opt_confs": ["robert-moist-smag-1300"],
+        "opt_confs": ["robert-moist-smag-l300"],
         "resolution": "BiP200x4-5x5",
         "DT": 0.625,
+        "mpi_parts": 4,
         "threads": 4,
         "tsteps": 1296,
-        "panel_decomp": "row",
         "use_xios": false,
-        "wallclock": 40,
+        "wallclock": 60,
         "kgo_checks": [],
-        "plot_str": "robert_plot.py diagGungho $NODAL_DATA_DIR 100 4 theta:w3projection_xi2:m_v T000000:T000216:T000432:T000648 $PLOT_DIR",
+        "plot_str": "robert_plot.py diagGungho $NODAL_DATA_DIR 200 4 theta:w3projection_xi2:m_v T000000:T000216:T000432:T000648 $PLOT_DIR",
     }) %}
 
 {% elif task_ns.conf_name == "sbr-C48_MG" %}
