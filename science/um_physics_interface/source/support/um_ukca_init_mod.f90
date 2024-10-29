@@ -7,24 +7,6 @@
 
 module um_ukca_init_mod
 
-  ! UM modules used
-  use dms_flux_mod_4a, only: i_liss_merlivat
-  use atmos_ukca_callback_mod, only: bl_tracer_mix
-
-  ! UM modules containing things that needs setting and setup routines
-  use mphys_diags_mod, only: l_praut_diag, l_pracw_diag, l_piacw_diag,         &
-                             l_psacw_diag
-  use bl_diags_mod, only: bl_diag
-  use ukca_nmspec_mod, only: nm_spec_active, nmspec_len
-  use ukca_option_mod, only: i_mode_nucscav, l_ukca_plume_scav
-  use ukca_scavenging_mod, only: ukca_set_conv_indices, tracer_info
-
-  use log_mod, only : log_event,                                               &
-                      log_scratch_space,                                       &
-                      LOG_LEVEL_ERROR, LOG_LEVEL_INFO
-
-  use constants_mod, only : r_um, i_um, i_def
-
   ! LFRic namelists which have been read
   use aerosol_config_mod,        only: glomap_mode,                            &
                                        glomap_mode_ukca,                       &
@@ -48,9 +30,31 @@ module um_ukca_init_mod
                                        top_bdy_opt_overwrt_co_no_o3_top,       &
                                        top_bdy_opt_overwrt_co_no_o3_h2o_top
 
-  ! JULES modules used
+  ! Other LFRic modules used
 
+  use log_mod, only : log_event,                                               &
+                      log_scratch_space,                                       &
+                      LOG_LEVEL_ERROR, LOG_LEVEL_INFO
+
+  use constants_mod, only : i_def, r_um, i_um
+  use water_constants_mod, only: tfs, rho_water, rhosea, latent_heat_cw => lc
+  use chemistry_constants_mod, only: avogadro, boltzmann, rho_so4
+
+  ! UM modules containing things that needs setting and setup routines
+  use mphys_diags_mod, only: l_praut_diag, l_pracw_diag, l_piacw_diag,         &
+                             l_psacw_diag
+  use bl_diags_mod, only: bl_diag
+  use ukca_nmspec_mod, only: nm_spec_active, nmspec_len
+  use ukca_option_mod, only: i_mode_nucscav, l_ukca_plume_scav
+  use ukca_scavenging_mod, only: ukca_set_conv_indices, tracer_info
+
+  ! Other UM modules used
+  use dms_flux_mod_4a,      only: i_liss_merlivat
+  use atmos_ukca_callback_mod, only: bl_tracer_mix
+
+  ! JULES modules used
   use jules_soil_mod,          only: dzsoil_io
+  use c_rmol,                  only: rmol
 
   ! UKCA API module
   use ukca_api_mod, only: ukca_setup,                                          &
@@ -894,6 +898,15 @@ contains
            i_ukca_tune_bc=i_ukca_bc_tuned,                                     &
            i_ukca_activation_scheme=i_tmp_ukca_activation_scheme,              &
            i_ukca_nwbins=20,                                                   &
+           ! Constants
+           const_rmol=rmol,                                                    &
+           const_tfs=tfs,                                                      &
+           const_rho_water=rho_water,                                          &
+           const_rhosea=rhosea,                                                &
+           const_lc=latent_heat_cw,                                            &
+           const_avogadro=avogadro,                                            &
+           const_boltzmann=boltzmann,                                          &
+           const_rho_so4=rho_so4,                                              &
            ! Callback procedures
            proc_bl_tracer_mix = bl_tracer_mix,                                 &
            ! UKCA temporary logicals
@@ -1505,6 +1518,12 @@ contains
     ! logicals, .true. by convention in UKCA, are not overridden.)
 
     call ukca_setup( ukca_errcode,                                             &
+
+           ! Switch to skip setting up constants: these will have already
+           ! been set when GLOMAP-clim is set up
+           !
+           l_skip_const_setup=.true.,                                          &
+
            ! Context information
            !
            row_length=row_length,                                              &

@@ -9,9 +9,7 @@
 module um_physics_init_mod
 
   ! LFRic namelists which have been read
-  use aerosol_config_mod,        only : activation_scheme,                     &
-                                        activation_scheme_jones,               &
-                                        glomap_mode,                           &
+  use aerosol_config_mod,        only : glomap_mode,                           &
                                         glomap_mode_climatology,               &
                                         glomap_mode_ukca,                      &
                                         glomap_mode_dust_and_clim,             &
@@ -191,17 +189,31 @@ module um_physics_init_mod
 
 
   ! Other LFRic modules used
-  use constants_mod,        only : i_def, l_def, r_um, i_um, r_def, r_bl
+  use constants_mod,        only: i_def, l_def, r_um, i_um, r_def, r_bl
+  use water_constants_mod,  only: rho_water, rhosea
+  use chemistry_constants_mod, only: avogadro, boltzmann, rho_so4
   use log_mod,              only : log_event,         &
                                    log_scratch_space, &
                                    LOG_LEVEL_ERROR,   &
                                    LOG_LEVEL_INFO
 
   use mr_indices_mod,       only : nummr_to_transport
+  use water_constants_mod,  only : rho_water
 
   ! UM modules used
   use cderived_mod,         only : delta_lambda, delta_phi
   use nlsizes_namelist_mod, only : bl_levels, model_levels
+
+  ! JULES modules used
+  use c_rmol,               only : rmol
+
+  ! UKCA modules used
+  use ukca_api_mod,         only : ukca_constants_setup
+  ! These items are not yet available via the UKCA API module
+  use ukca_mode_setup,      only: i_ukca_bc_tuned
+  use glomap_clim_mode_setup_interface_mod,                                  &
+                            only: glomap_clim_mode_setup_interface
+  use ukca_config_specification_mod, only: i_sussbcocdu_7mode
 
   implicit none
 
@@ -375,17 +387,13 @@ contains
     use turb_diff_mod, only: l_subfilter_horiz, l_subfilter_vert, &
                              mix_factor, turb_startlev_vert,      &
                              turb_endlev_vert, l_leonard_term
-    use ukca_mode_setup, only: ukca_mode_sussbcocdu_7mode, i_ukca_bc_tuned
-    use glomap_clim_mode_setup_interface_mod, &
-                                         only: glomap_clim_mode_setup_interface
-    use ukca_config_specification_mod, only: i_sussbcocdu_7mode
     use ukca_option_mod, only: l_ukca, l_ukca_plume_scav, mode_aitsol_cvscav, &
                                l_ukca_aie2, l_ukca_dust
     use ukca_scavenging_mod, only: ukca_mode_scavcoeff
 
     implicit none
 
-    integer(i_def) :: n, n_pft
+    integer(i_def) :: n, n_pft, error_code
     logical(l_def) :: l_fix_nacl_density
     logical(l_def) :: l_fix_ukca_hygroscopicities
     logical(l_def) :: l_dust_ageing_on
@@ -413,9 +421,34 @@ contains
       ! Options which are bespoke to the aerosol scheme chosen
       select case (glomap_mode)
 
-        case(glomap_mode_climatology, glomap_mode_dust_and_clim)
-          ! Set up the correct mode and components for GLOMAP-mode:
-          ! 5 mode with SU SS OM BC components
+        case(glomap_mode_climatology,                                          &
+             glomap_mode_dust_and_clim,                                        &
+             glomap_mode_radaer_test)
+
+          ! GLOMAP-clim uses configurable UKCA constants that must be setup
+          ! here in lieu of a 'ukca_setup' call (for 'climatology' and
+          ! 'radear_test') or in advance of a 'ukca_setup' call (for 'dust and
+          ! clim').
+          ! Note re 'dust_and_clim' option:
+          ! This option involves running GLOMAP-clim and UKCA dust alongside
+          ! each other. These separate configurations share a set of constants
+          ! which is set up here and not in the later 'ukca_setup' call.
+          ! Any values of configurable constants applicable to GLOMAP-clim
+          ! and/or UKCA that may differ from the UKCA defaults must be set here.
+          call ukca_constants_setup(error_code, const_rmol=rmol,               &
+                                    const_rho_water=rho_water,                 &
+                                    const_avogadro=avogadro,                   &
+                                    const_boltzmann=boltzmann,                 &
+                                    const_rho_so4=rho_so4)
+          if (error_code > 0) then
+            write(log_scratch_space,'(A,I0,A)')                                &
+              'Unexpected return code ', error_code,                           &
+              ' from ukca_constants_setup call'
+            call log_event( log_scratch_space, LOG_LEVEL_ERROR )
+          end if
+
+          ! Set up the correct mode and components for use with RADAER:
+          ! 7 mode with SU SS OM BC DU components
           i_glomap_clim_setup = i_sussbcocdu_7mode
           l_fix_nacl_density = .true.
           l_fix_ukca_hygroscopicities = .false.
@@ -432,20 +465,6 @@ contains
           ! until after that for JULES since JULES settings are required
           ! for configuring dry deposition.
 
-        case(glomap_mode_radaer_test)
-          ! Set up the correct mode and components for RADAER:
-          ! 7 mode with SU SS OM BC DU components
-          i_glomap_clim_setup = i_sussbcocdu_7mode
-          l_fix_nacl_density = .true.
-          l_fix_ukca_hygroscopicities = .false.
-          l_dust_ageing_on = .false.
-          i_glomap_clim_tune_bc = i_ukca_bc_tuned
-          call glomap_clim_mode_setup_interface( i_glomap_clim_setup,          &
-                                                 l_radaer,                     &
-                                                 i_glomap_clim_tune_bc,        &
-                                                 l_fix_nacl_density,           &
-                                                 l_fix_ukca_hygroscopicities,  &
-                                                 l_dust_ageing_on )
         case(glomap_mode_off)
           ! Do Nothing
 
