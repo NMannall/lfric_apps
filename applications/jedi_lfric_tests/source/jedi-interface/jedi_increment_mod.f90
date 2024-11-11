@@ -59,7 +59,7 @@ type, public :: jedi_increment_type
 contains
 
   !> Jedi increment initialiser.
-  procedure :: initialise => increment_initialiser_zero
+  procedure :: initialise
   procedure :: increment_initialiser
 
   !> Setup the atlas_field_interface_type that enables copying between Atlas
@@ -110,13 +110,15 @@ contains
 ! Methods required by the JEDI (OOPS) model interface
 !-------------------------------------------------------------------------------
 
-!> @brief    Initialiser via read for jedi_increment_type
+!> @brief    Initialise a jedi_increment_type
 !>
-!> @param [in] geometry The geometry object required to construct the increment
-!> @param [in] config   The configuration object including the required
-!>                      information to construct a increment and read a file to
-!>                      initialise the fields
-subroutine increment_initialiser_zero( self, geometry, configuration )
+!> @param [in] geometry      The geometry object required to construct the
+!>                           increment
+!> @param [in] configuration The configuration object including the required
+!>                           information to construct an increment and set the
+!>                           data via either a file-read or setting the values
+!>                           to zero
+subroutine initialise( self, geometry, configuration )
 
   implicit none
 
@@ -125,17 +127,29 @@ subroutine increment_initialiser_zero( self, geometry, configuration )
   type( namelist_collection_type ),   intent(in)    :: configuration
 
   ! Local
-  type( namelist_type ), pointer :: jedi_increment_config
+  type( namelist_type ), pointer :: increment_config
+  logical( l_def )               :: initialise_via_read
 
-  jedi_increment_config => configuration%get_namelist('jedi_increment')
+  increment_config => configuration%get_namelist('jedi_increment')
 
   ! Create
-  call self%increment_initialiser( geometry, jedi_increment_config )
+  call self%increment_initialiser( geometry, increment_config )
 
-  ! Initialise fields
-  call self%zero()
+  ! Initialise fields by either reading or zeroing the fields
+  call increment_config%get_value( 'initialise_via_read', initialise_via_read )
+  if ( initialise_via_read ) then
+    if ( geometry%get_io_setup_increment() ) then
+      call self%read_file( self%inc_time )
+    else
+      ! Fail because the file was not setup
+      log_scratch_space = 'The Increment file has not been setup, check the configuration.'
+      call log_event( log_scratch_space, LOG_LEVEL_ERROR )
+    endif
+  else
+    call self%zero()
+  endif
 
-end subroutine increment_initialiser_zero
+end subroutine initialise
 
 !> @brief    Initialiser for jedi_increment_type
 !>

@@ -15,7 +15,9 @@ module jedi_lfric_moist_fields_mod
 
   use constants_mod,                only: r_def
   use field_mod,                    only: field_type
-  use mr_indices_mod,               only: nummr, imr_g, imr_s
+  use field_collection_mod,         only: field_collection_type
+  use mr_indices_mod,               only: nummr, imr_v, imr_cl, imr_r, &
+                                          imr_ci, imr_s, imr_g
   use moist_dyn_mod,                only: num_moist_factors
   use tl_moist_dyn_factors_alg_mod, only: tl_moist_dyn_factors_alg
   use moist_dyn_factors_alg_mod,    only: moist_dyn_factors_alg
@@ -55,17 +57,35 @@ module jedi_lfric_moist_fields_mod
   !>
   !> @param[in,out] ls_mr        The linear state mixing ratios
   !> @param[in,out] ls_moist_dyn The linear state moist dynamical factors
-  subroutine update_ls_moist_fields( ls_mr, &
+  subroutine update_ls_moist_fields( depository, &
+                                     ls_mr,      &
                                      ls_moist_dyn )
 
     implicit none
 
-    type( field_type ), intent(inout) :: ls_mr(nummr)
-    type( field_type ), intent(inout) :: ls_moist_dyn(num_moist_factors)
+    type( field_collection_type ), intent(in) :: depository
+    type( field_type ),         intent(inout) :: ls_mr(nummr)
+    type( field_type ),         intent(inout) :: ls_moist_dyn(num_moist_factors)
+
+    ! Local
+    type( field_type ), pointer :: ls_m_v
+    type( field_type ), pointer :: ls_m_cl
+    type( field_type ), pointer :: ls_m_r
+    type( field_type ), pointer :: ls_m_ci
+
+    ! Get the ls moisture fields from the depository and put them in the bundle
+    call depository%get_field('ls_m_v', ls_m_v)
+    call depository%get_field('ls_m_cl', ls_m_cl)
+    call depository%get_field('ls_m_r', ls_m_r)
+    call depository%get_field('ls_m_ci', ls_m_ci)
 
     ! Graupel and snow moisture fields are set to zero. The other moisture
     ! fields are updated directly.
-    call invoke( setval_C(ls_mr(imr_g), 0.0_r_def), &
+    call invoke( setval_X(ls_mr(imr_v), ls_m_v),    &
+                 setval_X(ls_mr(imr_cl), ls_m_cl),  &
+                 setval_X(ls_mr(imr_r), ls_m_r),    &
+                 setval_X(ls_mr(imr_ci), ls_m_ci),  &
+                 setval_C(ls_mr(imr_g), 0.0_r_def), &
                  setval_C(ls_mr(imr_s), 0.0_r_def) )
 
     ! All moist dynamics fields are recomputed from ls_mr

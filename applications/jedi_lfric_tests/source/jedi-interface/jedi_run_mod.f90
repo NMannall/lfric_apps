@@ -57,7 +57,6 @@ subroutine initialise( self, program_name, out_communicator )
   class( jedi_run_type ), intent(inout) :: self
   character(len=*),       intent(in)    :: program_name
   integer(i_def),         intent(out)   :: out_communicator
-
   ! Local
   integer(i_def) :: world_communicator
 
@@ -85,7 +84,6 @@ subroutine initialise_infrastructure( self, filename, model_communicator )
   use driver_config_mod,             only: init_config
   use driver_log_mod,                only: init_logger
   use jedi_lfric_tests_mod,          only: jedi_lfric_tests_required_namelists
-  use namelist_collection_mod,       only: namelist_collection_type
 
   implicit none
 

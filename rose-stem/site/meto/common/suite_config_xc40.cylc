@@ -63,6 +63,7 @@
         [[[environment]]]
 {% if site_vars["meto_xc40"] == "xc" %}
             BIG_DATA_DIR = '/data/d03/lfric/data'
+            SS_DATA_DIR = '/data/d03/lfric/data/jedi-lfric/Ticket138'
 {% else %}
             BIG_DATA_DIR = '/common/lfric/data'
 {% endif %}

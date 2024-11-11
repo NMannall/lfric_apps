@@ -134,8 +134,17 @@ subroutine add_linear_state( self, next_datetime, next_linear_state )
   ! Check duplicates are not added
   do i_item=1,next_item_index-1
 
+    time_difference = next_datetime - self%linear_state_time(i_item)
+
+    ! The next_datetime should be current_datetime + time_step: abort if it is not
+    if (i_item==next_item_index-1) then
+      if ( time_difference/=self%time_step ) then
+        log_scratch_space = 'The input datetime is not one time step greater than the previous datetime.'
+        call log_event( log_scratch_space, LOG_LEVEL_ERROR )
+      endif
+    endif
+
     ! If slot has been filled then check the date is not already stored
-    time_difference = self%linear_state_time(i_item) - next_datetime
     if (time_difference==0) then
       log_scratch_space = 'The input datetime has already been used.'
       call log_event( log_scratch_space, LOG_LEVEL_ERROR )

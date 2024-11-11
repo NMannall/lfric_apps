@@ -14,8 +14,8 @@ module jedi_geometry_mod
   use, intrinsic :: iso_fortran_env, only : real64
 
   use calendar_mod,                  only : calendar_type
-  use constants_mod,                 only : i_def, str_def, r_second, &
-                                            i_timestep
+  use constants_mod,                 only : i_def, l_def, str_def, &
+                                            r_second, i_timestep
   use extrusion_mod,                 only : extrusion_type, TWOD
   use io_context_mod,                only : io_context_type
   use jedi_lfric_driver_time_mod,    only : jedi_lfric_init_time, &
@@ -57,6 +57,7 @@ type, public :: jedi_geometry_type
   type( model_clock_type ), allocatable :: io_clock
   class( io_context_type ), allocatable :: io_context
   class( calendar_type ),   allocatable :: calendar
+  logical( kind=l_def )                 :: io_setup_increment=.false.
 
 contains
 
@@ -70,6 +71,7 @@ contains
   procedure, public  :: get_mesh
   procedure, public  :: get_twod_mesh
   procedure, public  :: get_io_context
+  procedure, public  :: get_io_setup_increment
   procedure, public  :: get_n_horizontal
   procedure, public  :: get_n_layers
   procedure, public  :: get_horizontal_map
@@ -287,6 +289,21 @@ function get_io_context(self) result(context_ptr)
 
 end function get_io_context
 
+!> @brief    Get the io_setup_increment logical
+!>
+!> @return io_setup_increment Logical that defines if the increment io has been
+!>                            setup
+function get_io_setup_increment(self) result(io_setup_increment)
+
+  implicit none
+
+  class( jedi_geometry_type ), target, intent(in) :: self
+  logical( kind=l_def )                           :: io_setup_increment
+
+  io_setup_increment = self%io_setup_increment
+
+end function get_io_setup_increment
+
 !> @brief    Private method to setup the IO for the application
 !>
 !> @param [in] configuration A configuration object containing the IO options
@@ -308,15 +325,16 @@ subroutine setup_io(self, configuration)
   character( len=str_def ) :: field_group_id
   character( len=str_def ) :: file_name
   character( len=str_def ) :: context_name
-  character( len=str_def ) :: io_write_path
-  character( len=str_def ) :: io_read_path
+  character( len=str_def ) :: io_path_state_write
+  character( len=str_def ) :: io_path_state_read
+  character( len=str_def ) :: io_path_inc_read
   character( len=str_def ) :: io_time_step_str
   character( len=str_def ) :: io_calender_start_str
   integer( kind=i_def )    :: freq
 
-  type( jedi_lfric_file_meta_type ) :: file_meta_data(2)
-  type( jedi_duration_type )        :: io_time_step
-  type( jedi_datetime_type )        :: io_calender_start
+  type( jedi_lfric_file_meta_type ), allocatable :: file_meta_data(:)
+  type( jedi_duration_type )                     :: io_time_step
+  type( jedi_datetime_type )                     :: io_calender_start
 
   ! Create IO clock and setup IO
   call configuration%get_value( 'io_time_step', io_time_step_str )
@@ -331,11 +349,21 @@ subroutine setup_io(self, configuration)
   call jedi_lfric_init_time( time_step, calender_start, &
                              self%io_clock, self%calendar )
 
-  ! Setup two files - one read and one write
+  ! Allocate file_meta depending on how many files are required
+  call configuration%get_value( 'io_setup_increment', self%io_setup_increment )
+  if ( self%io_setup_increment ) then
+    allocate( file_meta_data(3) )
+  else
+    allocate( file_meta_data(2) )
+  endif
+
+  ! Setup IO files: i) state read, ii) state write and iii) increment read
+  !                 (if requested)
   ! Note, xios_id is arbitrary but has to be unique within a context
-  ! Read
-  call configuration%get_value( 'io_read_path', io_read_path )
-  file_name = io_read_path
+
+  ! Read state
+  call configuration%get_value( 'io_path_state_read', io_path_state_read )
+  file_name = io_path_state_read
   xios_id = "read_model_data"
   io_mode_str = "read"
   field_group_id = "read_fields"
@@ -345,9 +373,9 @@ subroutine setup_io(self, configuration)
                                      io_mode_str, &
                                      freq,        &
                                      field_group_id )
-  ! Write
-  call configuration%get_value( 'io_write_path', io_write_path )
-  file_name = io_write_path
+  ! Write state
+  call configuration%get_value( 'io_path_state_write', io_path_state_write )
+  file_name = io_path_state_write
   xios_id = "write_model_data"
   io_mode_str = "write"
   field_group_id = "write_fields"
@@ -358,7 +386,23 @@ subroutine setup_io(self, configuration)
                                      freq,        &
                                      field_group_id )
 
-  context_name = "jedi_state"
+  ! Read increment if required
+  if ( self%io_setup_increment ) then
+    call configuration%get_value( 'io_path_inc_read', io_path_inc_read )
+    file_name = io_path_inc_read
+    xios_id = "read_inc_model_data"
+    io_mode_str = "read"
+    field_group_id = "read_inc_fields"
+    freq=1_i_def
+    call file_meta_data(3)%initialise( file_name,   &
+                                       xios_id,     &
+                                       io_mode_str, &
+                                       freq,        &
+                                       field_group_id )
+  endif
+
+  ! Setup XIOS with the files defined by file_meta_data
+  context_name = "jedi_context"
   call initialise_io( context_name,         &
                       self%get_mpi_comm(),  &
                       file_meta_data,       &
@@ -385,6 +429,7 @@ subroutine jedi_geometry_destructor(self)
   if ( allocated(self % horizontal_map) ) deallocate(self % horizontal_map)
   if ( allocated(self % io_context) ) deallocate(self % io_context)
   call jedi_lfric_final_time( self%io_clock, self%calendar )
+  self%io_setup_increment = .false.
 
 end subroutine jedi_geometry_destructor
 

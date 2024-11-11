@@ -52,10 +52,9 @@ program jedi_forecast
   type( jedi_duration_type )                :: forecast_length
   type( namelist_type ),            pointer :: jedi_lfric_settings_config
   character( str_def )                      :: forecast_length_str
+  type( field_collection_type ), pointer    :: depository => null()
 
   character(*), parameter :: program_name = "jedi_forecast"
-
-  type( field_collection_type ), pointer :: depository => null()
 
   call log_event( 'Running ' // program_name // ' ...', LOG_LEVEL_ALWAYS )
   write(log_scratch_space,'(A)')                        &

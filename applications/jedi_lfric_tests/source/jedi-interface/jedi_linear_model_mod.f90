@@ -108,8 +108,11 @@ subroutine initialise( self, jedi_geometry, config_filename )
 
   ! Local
   type( namelist_type ), pointer :: jedi_lfric_settings_config
+  type( namelist_type ), pointer :: jedi_linear_model_config
   character( str_def )           :: forecast_length_str
+  character( str_def )           :: nl_time_step_str
   type( jedi_duration_type )     :: forecast_length
+  type( jedi_duration_type )     :: nl_time_step
 
   ! 1. Setup modeldb
 
@@ -130,8 +133,12 @@ subroutine initialise( self, jedi_geometry, config_filename )
   call forecast_length%init(forecast_length_str)
 
   ! 3. Setup trajactory
+  jedi_linear_model_config => self%modeldb%configuration%get_namelist('jedi_linear_model')
+  call jedi_linear_model_config%get_value( 'nl_time_step', nl_time_step_str )
+  call nl_time_step%init(nl_time_step_str)
+
   call self%linear_state_trajectory%initialise( forecast_length, &
-                                                self%time_step )
+                                                nl_time_step )
 
 end subroutine initialise
 
@@ -236,7 +243,8 @@ subroutine model_stepTL(self, increment)
   moisture_fields => self%modeldb%fields%get_field_collection("moisture_fields")
   call moisture_fields%get_field("ls_mr", mr_array)
   call moisture_fields%get_field("ls_moist_dyn", moist_dyn_array)
-  call update_ls_moist_fields( mr_array%bundle, &
+  call update_ls_moist_fields( depository, &
+                               mr_array%bundle, &
                                moist_dyn_array%bundle )
 
   ! 2. Step the linear model

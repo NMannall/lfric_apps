@@ -45,6 +45,7 @@
         [[[environment]]]
             ROSE_LAUNCHER_ULIMIT_OPTS = -s unlimited
             BIG_DATA_DIR = '/data/users/lfric/data'
+            SS_DATA_DIR = '/data/users/lfric/data/jedi-lfric/Ticket138'
             TARGET_PLATFORM = 'meto-spice'
             RUN_METHOD = mpiexec
         [[[directives]]]

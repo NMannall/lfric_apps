@@ -89,14 +89,19 @@ contains
     w3_fs     => function_space_collection%get_fs(mesh, element_order, W3)
     wtheta_fs => function_space_collection%get_fs(mesh, element_order, Wtheta)
 
-    call u_in_w3%initialise( vector_space=w3_fs, name="u_in_w3" )
-    call v_in_w3%initialise( vector_space=w3_fs, name="v_in_w3" )
-    call w_in_wth%initialise( vector_space=wtheta_fs, name="w_in_wth" )
-
-    ! Populate the depository
-    call depository%add_field( u_in_w3 )
-    call depository%add_field( v_in_w3 )
-    call depository%add_field( w_in_wth )
+    ! Populate the depository if fields are not present
+    if (.not.depository%field_exists('u_in_w3')) then
+      call u_in_w3%initialise( vector_space=w3_fs, name="u_in_w3" )
+      call depository%add_field( u_in_w3 )
+    endif
+    if (.not.depository%field_exists('v_in_w3')) then
+      call v_in_w3%initialise( vector_space=w3_fs, name="v_in_w3" )
+      call depository%add_field( v_in_w3 )
+    endif
+    if (.not.depository%field_exists('w_in_wth')) then
+      call w_in_wth%initialise( vector_space=w3_fs, name="w_in_wth" )
+      call depository%add_field( w_in_wth )
+    endif
 
     ! Populate the prognostic field collection
     call depository%get_field('u_in_w3', field_ptr)

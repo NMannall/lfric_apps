@@ -30,7 +30,7 @@ program jedi_tlm_forecast_tl
   use namelist_mod,                 only : namelist_type
 
   ! Jedi emulator objects
-  use jedi_checksum_mod,            only : output_checksum
+  use jedi_checksum_mod,            only : output_linear_checksum
   use jedi_lfric_duration_mod,      only : jedi_duration_type
   use jedi_run_mod,                 only : jedi_run_type
   use jedi_geometry_mod,            only : jedi_geometry_type
@@ -55,7 +55,6 @@ program jedi_tlm_forecast_tl
   type( namelist_collection_type ), pointer :: configuration
   character(:),                 allocatable :: filename
   integer( kind=i_def )                     :: model_communicator
-  type( field_collection_type ),    pointer :: depository => null()
   type( jedi_duration_type )                :: forecast_length
   type( namelist_type ),            pointer :: jedi_lfric_settings_config
   character( str_def )                      :: forecast_length_str
@@ -113,7 +112,6 @@ program jedi_tlm_forecast_tl
   call log_event( 'Finalising ' // program_name // ' ...', LOG_LEVEL_ALWAYS )
 
   ! To provide KGO
-  depository => jedi_linear_model%modeldb%fields%get_field_collection("depository")
-  call output_checksum( program_name, depository )
+  call output_linear_checksum( program_name, jedi_linear_model%modeldb )
 
 end program jedi_tlm_forecast_tl

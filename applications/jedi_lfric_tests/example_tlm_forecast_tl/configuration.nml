@@ -4,32 +4,36 @@ test_field='theta',
 
 #### Configure JEDI-LFRIC
 
-&jedi_lfric_settings
-forecast_length='P0DT6H0M0S'
-/
-
-&jedi_increment
-variables='theta', 'rho', 'exner', 'u_in_w3', 'v_in_w3', 'w_in_wth', 'm_v', 'm_cl', 'm_r', 'm_ci',
-inc_time='2018-04-14 21:00:00'
-/
-
-&jedi_state
-variables='theta', 'rho', 'u10m', 'exner', 'u_in_w3', 'v_in_w3', 'w_in_wth', 'm_v', 'm_cl', 'm_r', 'm_ci',
-state_time='2018-04-14 21:00:00',
-use_pseudo_model=true
-/
-
 &jedi_geometry
-io_time_step='P0DT1H0M0S',
 io_calender_start='2018-04-14T21:00:00',
-io_read_path='/data/users/lfric/data/jedi-lfric/Ticket4141/jedi_trajectory',
-io_write_path='write_file'
+io_path_inc_read='/data/users/lfric/data/jedi-lfric/Ticket138/pert_fields/lfric_diag',
+io_path_state_read='/data/users/lfric/data/jedi-lfric/Ticket138/ls_fields/jedi_trajectory',
+io_path_state_write='write_file',
+io_setup_increment=.true.,
+io_time_step='P0DT1H0M0S',
 /
-
+&jedi_state
+state_time='2018-04-14 21:00:00',
+use_pseudo_model=.true.,
+variables='theta','rho','u10m','exner','u_in_w3','v_in_w3','w_in_wth',
+'m_v','m_cl','m_r','m_ci',
+/
+&jedi_increment
+inc_time='2018-04-14 21:00:00',
+initialise_via_read=.true.,
+variables='theta','rho','exner','u_in_w3','v_in_w3','w_in_wth','m_v',
+'m_cl','m_r','m_ci',
+/
+&jedi_linear_model
+nl_time_step='P0DT1H0M0S',
+/
 &jedi_pseudo_model
-initial_time='2018-04-14T21:00:00'
-number_of_steps=9
-time_step='P0DT1H0M0S'
+initial_time='2018-04-14T21:00:00',
+number_of_steps=9,
+time_step='P0DT1H0M0S',
+/
+&jedi_lfric_settings
+forecast_length='P0DT6H0M0S',
 /
 
 #### Configure LFRic
@@ -38,7 +42,7 @@ time_step='P0DT1H0M0S'
 file_prefix='mesh_C12',
 geometry='spherical',
 prepartitioned=.false.,
-prime_mesh_name='dynamics',
+prime_mesh_name='C12',
 topology='fully_periodic',
 /
 &boundaries
@@ -48,10 +52,20 @@ limited_area=.false.,
 limit_cfl=.false.,
 /
 &section_choice
+aerosol='none',
+boundary_layer='none',
+chemistry='none',
+cloud='none',
 dynamics='gungho',
 external_forcing=.false.,
 iau=.false.,
 iau_surf=.false.,
+methane_oxidation=.false.,
+orographic_drag='none',
+radiation='none',
+spectral_gwd='none',
+stochastic_physics='none',
+surface='none',
 /
 &damping_layer
 dl_base=40000.0,
@@ -109,7 +123,7 @@ rotating=.true.,
 shallow=.true.,
 si_momentum_equation=.false.,
 use_multires_coupling=.false.,
-use_physics=.false.,
+use_physics=.true.,
 use_wavedynamics=.true.,
 vector_invariant=.false.,
 /
@@ -146,6 +160,7 @@ tile_snow_mass=11*0.0,
 ancil_option='none',
 coarse_aerosol_ancil=.false.,
 coarse_orography_ancil=.false.,
+coarse_ozone_ancil=.false.,
 init_option='analytic',
 lbc_option='none',
 ls_option='analytic',
@@ -154,6 +169,7 @@ read_w2h_wind=.true.,
 sea_ice_source='ancillary',
 snow_source='start_dump',
 w0_orography_mapping=.false.,
+zero_w2v_wind=.false.,
 /
 &initial_density
 density_background=0.1,
@@ -210,6 +226,7 @@ write_fluxes=.false.,
 write_minmax_tseries=.false.,
 /
 &linear
+ls_read_w2h=.false.,
 pert_option='analytic',
 /
 &logging
@@ -223,7 +240,7 @@ guess_np1=.false.,
 mixed_solver_a_tol=1.0e-3,
 monitor_convergence=.true.,
 normalise=.true.,
-reference_reset_time=1800.0,
+reference_reset_time=1800,
 si_maximum_iterations=10,
 si_method='block_gcr',
 si_preconditioner='pressure',
@@ -249,6 +266,9 @@ panel_yproc=1,
 partitioner='cubedsphere',
 /
 &physics
+limit_drag_incs=.false.,
+sample_physics_scalars=.false.,
+sample_physics_winds=.false.,
 /
 &planet
 cp=1005.0,
@@ -257,6 +277,27 @@ omega=7.292116E-5,
 p_zero=100000.0,
 rd=287.05,
 scaling_factor=1.0,
+/
+&radiative_gases
+cfc113_rad_opt='off',
+cfc11_rad_opt='off',
+cfc12_rad_opt='off',
+ch4_rad_opt='off',
+co2_rad_opt='off',
+co_rad_opt='off',
+h2_rad_opt='off',
+h2o_rad_opt='prognostic',
+hcfc22_rad_opt='off',
+hcn_rad_opt='off',
+he_rad_opt='off',
+hfc134a_rad_opt='off',
+l_cts_fcg_rates=.false.,
+n2_rad_opt='off',
+n2o_rad_opt='off',
+nh3_rad_opt='off',
+o2_rad_opt='off',
+o3_rad_opt='off',
+so2_rad_opt='off',
 /
 &solver
 gcrk=18,
@@ -288,26 +329,26 @@ tau_u=0.55,
 /
 &transport
 adjust_theta=.false.,
-adjust_vhv_wind=.false.
+adjust_vhv_wind=.false.,
 ageofair_reset_level=10,
 broken_w2_projection=.false.,
 calculate_detj='upwind',
-cap_density_predictor=0.001,
+cap_density_predictor=0.5,
 cfl_mol_1d_stab=1.0,
 cfl_mol_2d_stab=1.0,
 cfl_mol_3d_stab=1.0,
 cheap_update=.false.,
-ffsl_splitting=5*1,
 consistent_metric=.false.,
 dep_pt_stencil_extent=3,
 dry_field_name='density',
 enforce_min_value=5*.false.,
 equation_form=1,2,2,2,2,
 extended_mesh=.false.,
-ffsl_inner_order=1,
+ffsl_inner_order=0,
 ffsl_outer_order=1,
-ffsl_unity_3d=.false.
-ffsl_vertical_order=5*2
+ffsl_splitting=5*1,
+ffsl_unity_3d=.false.,
+ffsl_vertical_order=2,2,1,2,2,
 field_names='density','potential_temperature','wind','moisture',
 'con_tracer',
 fv_horizontal_order=2,
@@ -332,7 +373,7 @@ special_edges_high_order=.false.,
 special_edges_monotone=5*1,
 special_edges_treatment=.false.,
 splitting=5*1,
-substep_transport='off'
+substep_transport='off',
 theta_dispersion_correction=.false.,
 theta_variable='dry',
 transport_ageofair=.false.,

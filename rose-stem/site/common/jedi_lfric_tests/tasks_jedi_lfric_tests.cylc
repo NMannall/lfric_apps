@@ -59,7 +59,7 @@
         "app_name": "jedi_tlm_forecast_tl",
         "opt_confs": ["default"],
         "resolution": "C12",
-        "DT": 3600,
+        "DT": 1800,
         "tsteps": 13,
     }) %}
 

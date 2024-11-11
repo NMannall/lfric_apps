@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <simulation>
 
-  <context id = "jedi_state">
+  <context id = "jedi_context">
 
     <axis_definition>
       <axis id="vert_axis_half_levels" name="half_levels"/>
