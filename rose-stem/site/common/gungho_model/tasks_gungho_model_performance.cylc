@@ -9,16 +9,493 @@
 {# Performance Group Tasks #}
 {# ####################### #}
 
-{% if task_ns.conf_name == "gh_profile_omp1_6nodes-C192_MG" %}
+{% if task_ns.conf_name == "gh_profile_omp1_3nodes-C256_MG" %}
 
     {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C256_MG",
+        "DT": 900,
+        "mpi_parts": 384,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp1_6nodes-C256_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C256_MG",
+        "DT": 900,
+        "mpi_parts": 768,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp1_12nodes-C256_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C256_MG",
+        "DT": 900,
+        "mpi_parts": 1536,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp2_3nodes-C256_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C256_MG",
+        "DT": 900,
+        "mpi_parts": 192,
+        "threads": 2,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp2_6nodes-C256_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C256_MG",
+        "DT": 900,
+        "mpi_parts": 384,
+        "threads": 2,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp2_12nodes-C256_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C256_MG",
+        "DT": 900,
+        "mpi_parts": 768,
+        "threads": 2,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp4_3nodes-C256_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C256_MG",
+        "DT": 900,
+        "mpi_parts": 96,
+        "threads": 4,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp4_6nodes-C256_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C256_MG",
+        "DT": 900,
+        "mpi_parts": 192,
+        "threads": 4,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp4_12nodes-C256_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C256_MG",
+        "DT": 900,
+        "mpi_parts": 384,
+        "threads": 4,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp8_3nodes-C256_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C256_MG",
+        "DT": 900,
+        "mpi_parts": 48,
+        "threads": 8,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp8_6nodes-C256_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C256_MG",
+        "DT": 900,
+        "mpi_parts": 96,
+        "threads": 8,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+
+{% elif task_ns.conf_name == "gh_profile_omp8_12nodes-C256_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C256_MG",
+        "DT": 900,
+        "mpi_parts": 192,
+        "threads": 8,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp1_3nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 384,
+        "threads": 1,
+        "tsteps": 384,
+        "wallclock": 80,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp1_6nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 768,
+        "threads": 1,
+        "tsteps": 384,
+        "wallclock": 80,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp1_12nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 1536,
+        "threads": 1,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp1_24nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 3072,
+        "threads": 1,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp1_48nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 6144,
+        "threads": 1,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp2_3nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 192,
+        "threads": 2,
+        "tsteps": 384,
+        "wallclock": 80,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp2_6nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 384,
+        "threads": 2,
+        "tsteps": 384,
+        "wallclock": 80,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp2_12nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 768,
+        "threads": 2,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp2_24nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 1536,
+        "threads": 2,
+        "tsteps": 384,
+        "wallclock": 30,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp2_48nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 3072,
+        "threads": 2,
+        "tsteps": 384,
+        "wallclock": 30,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp4_3nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 96,
+        "threads": 4,
+        "tsteps": 384,
+        "wallclock": 80,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp4_6nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 192,
+        "threads": 4,
+        "tsteps": 384,
+        "wallclock": 80,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp4_12nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 384,
+        "threads": 4,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp4_24nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 768,
+        "threads": 4,
+        "tsteps": 384,
+        "wallclock": 30,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp4_48nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 1536,
+        "threads": 4,
+        "tsteps": 384,
+        "wallclock": 30,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp8_3nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 48,
+        "threads": 8,
+        "tsteps": 384,
+        "wallclock": 80,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp8_6nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 96,
+        "threads": 8,
+        "tsteps": 384,
+        "wallclock": 80,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp8_12nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 192,
+        "threads": 8,
+        "tsteps": 384,
+        "wallclock": 40,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp8_24nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 384,
+        "threads": 8,
+        "tsteps": 384,
+        "wallclock": 30,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp8_48nodes-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["held-suarez", "no_io"],
+        "resolution": "C512_MG",
+        "DT": 450,
+        "mpi_parts": 768,
+        "threads": 8,
+        "tsteps": 384,
+        "wallclock": 30,
+        "kgo_checks": [],
+        "use_xios": false,
+        "log_level": "warning",
+    }) %}
+
+{% elif task_ns.conf_name == "gh_profile_omp1_6nodes-C192_MG" %}
+
+   {% do task_dict.update({
         "opt_confs": ["held-suarez", "no_io"],
         "resolution": "C192_MG",
         "DT": 1200,
         "use_xios": false,
         "log_level": "warning",
         "mpi_parts": 216,
-        "tsteps": 96,
+        "tsteps": 384,
         "wallclock": 40,
         "kgo_checks": [],
     }) %}
@@ -33,7 +510,7 @@
         "log_level": "warning",
         "mpi_parts": 48,
         "threads": 6,
-        "tsteps": 96,
+        "tsteps": 384,
         "wallclock": 40,
         "kgo_checks": [],
     }) %}
@@ -48,7 +525,7 @@
         "log_level": "warning",
         "mpi_parts": 24,
         "threads": 9,
-        "tsteps": 96,
+        "tsteps": 384,
         "wallclock": 45,
         "kgo_checks": [],
     }) %}
@@ -65,7 +542,7 @@
         "panel_decomp": "custom",
         "xproc": 12,
         "yproc": 6,
-        "tsteps": 96,
+        "tsteps": 384,
         "wallclock": 20,
         "kgo_checks": [],
     }) %}
@@ -80,7 +557,7 @@
         "log_level": "warning",
         "mpi_parts": 72,
         "threads": 6,
-        "tsteps": 96,
+        "tsteps": 384,
         "wallclock": 25,
         "kgo_checks": [],
     }) %}
@@ -95,7 +572,7 @@
         "log_level": "warning",
         "mpi_parts": 48,
         "threads": 9,
-        "tsteps": 96,
+        "tsteps": 384,
         "wallclock": 25,
         "kgo_checks": [],
     }) %}
@@ -109,7 +586,7 @@
         "use_xios": false,
         "log_level": "warning",
         "mpi_parts": 864,
-        "tsteps": 96,
+        "tsteps": 384,
         "wallclock": 20,
         "kgo_checks": [],
     }) %}
@@ -124,7 +601,7 @@
         "log_level": "warning",
         "mpi_parts": 144,
         "threads": 6,
-        "tsteps": 96,
+        "tsteps": 384,
         "wallclock": 20,
         "kgo_checks": [],
     }) %}
@@ -139,7 +616,7 @@
         "log_level": "warning",
         "mpi_parts": 96,
         "threads": 9,
-        "tsteps": 96,
+        "tsteps": 384,
         "wallclock": 20,
         "kgo_checks": [],
     }) %}
@@ -154,7 +631,7 @@
         "log_level": "warning",
         "mpi_parts": 288,
         "threads": 6,
-        "tsteps": 96,
+        "tsteps": 384,
         "wallclock": 40,
         "kgo_checks": [],
     }) %}
@@ -169,7 +646,7 @@
         "log_level": "warning",
         "mpi_parts": 1152,
         "threads": 6,
-        "tsteps": 96,
+        "tsteps": 384,
         "wallclock": 40,
         "kgo_checks": [],
     }) %}
@@ -237,7 +714,7 @@
     {% do task_dict.update({
         "opt_confs": ["baroclinic", "no_io"],
         "resolution": "C512_MG",
-        "DT": 900,
+        "DT": 450,
         "threads": 1,
         "mpi_parts": 1536,
         "tsteps": 72,
@@ -252,7 +729,7 @@
     {% do task_dict.update({
         "opt_confs": ["baroclinic", "no_io"],
         "resolution": "C512_MG",
-        "DT": 900,
+        "DT": 450,
         "threads": 2,
         "mpi_parts": 768,
         "tsteps": 72,

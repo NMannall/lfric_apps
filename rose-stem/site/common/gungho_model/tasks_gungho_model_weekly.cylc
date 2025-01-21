@@ -63,10 +63,10 @@
         "plot_str": "baroclinic.py $NODAL_DATA_DIR/lfric_diag.nc $PLOT_DIR dcmip dry surface_pressure_temperature",
     }) %}
 
-{% elif task_ns.conf_name == "baroclinic-noio-C192_MG" %}
+{% elif task_ns.conf_name == "baroclinic-no_io-C192_MG" %}
 
     {% do task_dict.update({
-        "opt_confs": ["baroclinic-noio"],
+        "opt_confs": ["baroclinic", "no_io"],
         "resolution": "C192_MG",
         "DT": 900,
         "mpi_parts": 384,

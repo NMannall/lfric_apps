@@ -39,6 +39,7 @@ if [ "${TARGET_PLATFORM}" = "meto-xc40" ] || [ "${TARGET_PLATFORM}" = "meto-ex1a
 
   # Set some default values based on cores per node, hyperthreads and OpenMP
   DEFAULT_CORES_PER_NODE="$(( CORES_PER_NODE * HYPERTHREADS ))"
+  STANDARD_CORES_PER_NODE="${DEFAULT_CORES_PER_NODE}"
   DEFAULT_CORES_PER_NODE="$(( DEFAULT_CORES_PER_NODE / OMP_NUM_THREADS ))"
   SET_CORES_PER_NODE="${DEFAULT_CORES_PER_NODE}"
 
@@ -48,7 +49,7 @@ if [ "${TARGET_PLATFORM}" = "meto-xc40" ] || [ "${TARGET_PLATFORM}" = "meto-ex1a
 
   # Set MPI ranks / PEs per Node from provided value
   #===========================================
-  # If there is no override, or it is default to 0, set it to known CORES_PER_NODE
+  # If there is an override
   if (( "${CORES_PER_NODE_OVERRIDE}" > "0" )) ; then
     echo "Override provided"
     # we are checking a value is set, which times by threads comes out sensible
@@ -63,6 +64,24 @@ if [ "${TARGET_PLATFORM}" = "meto-xc40" ] || [ "${TARGET_PLATFORM}" = "meto-ex1a
     #If nothing appropriate can be set, fall back on the default
       SET_CORES_PER_NODE="${DEFAULT_CORES_PER_NODE}"
       echo "Note, ranks per node has defaulted to standard value of maximum ranks per node".
+    fi
+  # if there is no override / default is 0, set it to known CORES_PER_NODE and check this fits with threading
+  else
+    # Grab a copy
+    TEST_SET_CORES="${SET_CORES_PER_NODE}"
+    # Check if it divides over the numa
+    if [ $(( TEST_SET_CORES % NUMA_REGIONS_PER_NODE )) -ne 0 ] ; then
+      # If not, from 1 to the total ranks available
+      for ((INDEX=1;INDEX<=STANDARD_CORES_PER_NODE;INDEX++)) ; do
+      # check if the index will divide cleanly over numa
+        if [ $(( INDEX % NUMA_REGIONS_PER_NODE )) -eq 0 ] ; then
+        # if it does ensure this remains a value which fits on the node
+          TEST_SET_CORES="$(( INDEX * OMP_NUM_THREADS ))"
+          if [ $TEST_SET_CORES -le $STANDARD_CORES_PER_NODE ] ; then
+            SET_CORES_PER_NODE=$INDEX
+          fi
+        fi
+      done
     fi
   fi
   # Set the cores per node to the same as the total ranks provided if too few

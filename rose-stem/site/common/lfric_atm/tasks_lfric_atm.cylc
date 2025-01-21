@@ -57,6 +57,29 @@
         "wallclock": 10,
     }) %}
 
+{% elif task_ns.conf_name == "nwp_gal9_perf-C256_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_perf"],
+        "resolution": "C256_MG",
+        "DT": 540,
+        "tsteps": 120,
+        "mpi_parts": 768,
+        "wallclock": 20,
+    }) %}
+
+{% elif task_ns.conf_name == "nwp_gal9_perf-C512_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["nwp_gal9_perf"],
+        "resolution": "C512_MG",
+        "DT": 270,
+        "tsteps": 120,
+        "mpi_parts": 3072,
+        "wallclock": 20,
+    }) %}
+
+
 {% elif task_ns.conf_name == "nwp_gal9-C224_MG" %}
 
     {% do task_dict.update({

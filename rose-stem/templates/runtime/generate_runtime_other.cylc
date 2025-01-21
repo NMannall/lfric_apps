@@ -84,19 +84,17 @@
 {% elif task.startswith("perftools") %}
 {# Perftools Tasks #}
 
-    {# We want to run in the same family as the previous task #}
-    {% set family_perftools = task_ns.application~"_"~
-                            task_ns.conf_name~"_"~
-                            task_ns.platform~"_"~
-                            task_ns.compiler~"_"~
-                            task_ns.extras %}
-
+    {# We want to target the previous run task #}
     {% set previous_job = "run_"~
-                          family_perftools %}
+                          task_ns.application~"_"~
+                          task_ns.conf_name~"_"~
+                          task_ns.platform~"_"~
+                          task_ns.compiler~"_"~
+                          task_ns.extras %}
 
     {# Set the family inheritance for this task #}
     {% set inherit = namespace(str="") %}
-    {% set inherit.str = family_perftools|upper%}
+    {% set inherit.str = task_family|upper %}
     {% for family in task_values["run_families"] %}
         {% set inherit.str = inherit.str~","~family|upper %}
     {% endfor %}

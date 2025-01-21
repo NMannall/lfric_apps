@@ -26,42 +26,51 @@
 
 {# If an override is set, on xc40 -s (Numas) needs to be a multiple of -N #}
     {% if (ranks_per_node > 0) and ((ranks_per_node|int * threads|int) <= xc40_cores_per_node|int) %}
-{# Check if ranks per node can divide cleanly over the numas #}
-        {% if (ranks_per_node|int % xc40_numa_per_node|int == 0) %}
-            {% set cores_per_numa = (ranks_per_node|float / xc40_numa_per_node|float)|round(0, 'ceil')|int %}
-        {% else %}
-{# Otherwise find something that will #}
-            {% set found_multiplier = false %}
-            {% set check_mod_ranks_per_node = xc40_cpu_per_numa %}
-            {% for check_iterator in range(1, check_mod_ranks_per_node|int)|reverse %}
-                {% if (ranks_per_node|int % check_iterator|int == 0) %}
-                    {% set found_multiplier = true %}
-                    {% set cores_per_numa = check_mod_ranks_per_node %}
+            {% set possible_nodes = (mpi_ranks|float / ranks_per_node|float)|round(0, 'ceil')|int %}
+{# If no override is set, or it is unusable, use ranks, threads and cores per node to work out how many nodes to select #}
+    {% else %}
+        {% set checking_total_cpus = (mpi_ranks|int * threads|int)|int %}
+        {# Threads use cpus, and change how any decomposition can be placed into a numa and a node #}
+        {% if threads|int > 1 %}
+            {# Setup values to test against #}
+            {% set found_multiplier = namespace(bool=false) %}
+            {% set last_valid_index = namespace(int=0) %}
+            {% set checking_maths = namespace(int=0) %}
+            {# Work through all ideal fits for threading decomps into a node. #}
+            {# We want to get to or as close to the cores_per_node. #}
+            {% set xc40_cores_per_node_threshold = xc40_cores_per_node|int + 1 %}
+            {% for check_iterator in range(xc40_cores_per_node_threshold) %}
+                {% set checking_maths.int = (check_iterator|int * threads|int)|int %}
+                {# Check if the value so far fits accross numas and into the node and store it #}
+                {# The last to fit will be kept #}
+                {% if (check_iterator|int % xc40_numa_per_node|int == 0) %}
+                    {% if (checking_maths.int <= xc40_cores_per_node|int) and (checking_maths.int <= checking_total_cpus|int) %}
+                        {% set found_multiplier.bool = true %}
+                        {% set last_valid_index.int = check_iterator|int %}
+                    {% endif %}
                 {% endif %}
             {% endfor %}
-{# If nothing was found, set it to be the ranks per node override, unless this exceeds cpus in a numa #}
-            {% if not found_multiplier %}
-                {% if ranks_per_node <= xc40_cpu_per_numa %}
-                    {% set cores_per_numa = ranks_per_node %}
+            {# Else fail safe - this will likely be due to not splitting over the numas #}
+            {% if found_multiplier.bool %}
+                {% set cpus_per_node_max = ( last_valid_index.int|int * threads|int )|int  %}
+            {% else %}
+                {% if (checking_total_cpus|int >= xc40_cores_per_node|int) %}
+                    {% set cpus_per_node_max = xc40_cores_per_node|int  %}
                 {% else %}
-                    {% set cores_per_numa = 1 %}
+                    {% set cpus_per_node_max = checking_total_cpus|int  %}
                 {% endif %}
             {% endif %}
-        {% endif %}
 
-        {% set numas_needed = (mpi_ranks|float / cores_per_numa|float)|round(0, 'ceil')|int %}
-        {% if cores_per_numa == ranks_per_node %}
-            {% set lfric_nodes = numas_needed|int %}
         {% else %}
-            {% set lfric_nodes = (numas_needed|float / xc40_numa_per_node|float)|round(0, 'ceil')|int %}
+            {# If a single thread, we will be  #}
+            {% set cpus_per_node_max = xc40_cores_per_node|int  %}
         {% endif %}
 
-        {# If no override is set, use ranks, threads and cores per node to work out how many nodes to select #}
-    {% else %}
-        {% set lfric_nodes = ((mpi_ranks|float * threads|float) /
-                            (xc40_cores_per_node|float))|round(0, 'ceil')|int %}
+        {% set possible_nodes = ((checking_total_cpus|float / cpus_per_node_max|float)|round(method='ceil'))|int %}
     {% endif %}
 
+    {# Whatever the result, set the node count #}
+    {% set lfric_nodes = possible_nodes %}
             -l select={{ lfric_nodes +
                          ocean_nodes|int +
                          river_nodes|int +

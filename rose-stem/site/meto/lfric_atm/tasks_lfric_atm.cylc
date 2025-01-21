@@ -9,7 +9,8 @@
 
 {% if "perftools" in task_ns.compiler %}
     {% do task_dict.update({
-        "kgo_checks": [], }) %}
+        "kgo_checks": [],
+        "plot_str": "", }) %}
 {% endif %}
 
 {% do LOG.debug("Finised in site/meto/lfric_atm/tasks_lfric_atm.cylc") %}

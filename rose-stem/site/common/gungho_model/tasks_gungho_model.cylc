@@ -79,7 +79,19 @@
         "DT": 3600,
         "threads": 4,
         "mpi_parts": 6,
-        "task_ranks_per_node": 3,
+        "tsteps": 24,
+        "use_xios": false,
+        "kgo_checks": [],
+    }) %}
+
+{% elif task_ns.conf_name == "baroclinic-profile_perf-C24_MG" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["baroclinic", "no_io"],
+        "resolution": "C24_MG",
+        "DT": 3600,
+        "threads": 4,
+        "mpi_parts": 6,
         "tsteps": 24,
         "use_xios": false,
         "kgo_checks": [],

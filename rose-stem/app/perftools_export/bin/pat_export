@@ -43,12 +43,14 @@ echo "#####################################################################"
 echo "Rank reorder generated"
 echo "#####################################################################"
 
-if ($OUTPUT_TO_DATADIR); then 
-    if [ ! "$ALTERNATE_OUTPUT_PATH" ] -a [ "$ALTERNATE_OUTPUT_PATH" != " " ] -a [ "$ALTERNATE_OUTPUT_PATH" != "" ]; then
-        MOVE_OUTPUTS_TO=$ALTERNATE_OUTPUT_PATH"/"$CURRENT_REVISON_NUMBER"/"$APP_CONFIGURATION_OUTPUT"/"
+if ($OUTPUT_TO_DATADIR); then
+
+    if [ "$ALTERNATE_OUTPUT_PATH" != " " -a "$ALTERNATE_OUTPUT_PATH" != "" ] ; then
+        MOVE_OUTPUTS_TO=$ALTERNATE_OUTPUT_PATH"/"$APP_CONFIGURATION_OUTPUT"/"
     else
-        MOVE_OUTPUTS_TO=$DATADIR"/"$CURRENT_REVISON_NUMBER"/"$APP_CONFIGURATION_OUTPUT"/"
+        MOVE_OUTPUTS_TO=$DATADIR"/"$OUTPUT_TOP_DIR_NAME"/"$APP_CONFIGURATION_OUTPUT"/"
     fi
+
     echo $MOVE_OUTPUTS_TO
     mkdir -p $MOVE_OUTPUTS_TO
     mv $PAT_REPORT_TARGET $MOVE_OUTPUTS_TO
