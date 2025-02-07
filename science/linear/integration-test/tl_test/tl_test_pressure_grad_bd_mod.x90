@@ -139,8 +139,8 @@ module tl_test_pressure_grad_bd_mod
     call clone_bundle(n_moist_dyn, p_moist_dyn, num_moist_factors)
 
     reference_element => mesh%get_reference_element()
-    qrf = quadrature_face_type(MAX(element_order_h, element_order_v)+2,        &
-                               .true., .false., &
+    qrf = quadrature_face_type(element_order_h+2, element_order_v+2, &
+                               .true., .false.,                      &
                                reference_element,  gaussian_quadrature)
 
     ! Output fields

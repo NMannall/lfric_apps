@@ -115,7 +115,8 @@ contains
     ! Get coordinates and set up quadrature
     chi => get_coordinates(mesh%get_id())
     panel_id => get_panel_id(mesh%get_id())
-    qr  = quadrature_xyoz_type(MAX(element_order_h, element_order_v)+3, quadrature_rule)
+    qr  = quadrature_xyoz_type(element_order_h+3, element_order_h+3, &
+                               element_order_v+3, quadrature_rule)
     w1_fs => function_space_collection%get_fs(mesh, element_order_h, element_order_v, W1)
 
     domain = mesh%get_domain()
@@ -218,7 +219,8 @@ contains
 
     chi => get_coordinates(mesh_id)
     panel_id => get_panel_id(mesh_id)
-    qr  = quadrature_xyoz_type(MAX(element_order_h, element_order_v)+3, quadrature_rule)
+    qr  = quadrature_xyoz_type(element_order_h+3, element_order_h+3, &
+                               element_order_v+3, quadrature_rule)
     w1_fs => function_space_collection%get_fs(geopot%get_mesh(), element_order_h, &
                                               element_order_v, W1)
 

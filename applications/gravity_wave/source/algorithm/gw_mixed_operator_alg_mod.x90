@@ -101,8 +101,8 @@ contains
 
     ! Construct projection operator \f$ Q \f$
     call self%Q%initialise( u_fs, b_fs)
-    qr = quadrature_xyoz_type(MAX(element_order_h, element_order_v)+2, &
-                              quadrature_rule)
+    qr = quadrature_xyoz_type(element_order_h+2, element_order_h+2, &
+                              element_order_v+2, quadrature_rule)
     call invoke( compute_q_operator_type(self%Q, qr) )
 
   end function gw_mixed_operator_constructor

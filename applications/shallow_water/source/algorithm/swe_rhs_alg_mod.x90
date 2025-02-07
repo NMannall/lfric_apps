@@ -127,10 +127,10 @@ contains
 
     ! Quadrature set up
     reference_element => mesh%get_reference_element()
-    qr  = quadrature_xyoz_type(MAX(element_order_h, element_order_v)+2, &
-                               gaussian_quadrature)
-    qrf = quadrature_face_type(MAX(element_order_h, element_order_v)+2, &
-                               .true., .false.,                         &
+    qr  = quadrature_xyoz_type(element_order_h+2, element_order_h+2, &
+                               element_order_v+2, gaussian_quadrature)
+    qrf = quadrature_face_type(element_order_h+2, element_order_v+2, &
+                               .true., .false.,                      &
                                reference_element, gaussian_quadrature)
 
     ! Initialise variables

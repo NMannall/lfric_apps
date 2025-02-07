@@ -12,7 +12,7 @@ module solver_miniapp_alg_mod
                                              LOG_LEVEL_INFO, LOG_LEVEL_ERROR, &
                                              log_scratch_space
   use field_mod,                      only : field_type
-  use finite_element_config_mod,      only : nqp_exact
+  use finite_element_config_mod,      only : nqp_h_exact, nqp_v_exact
   use fs_continuity_mod,              only : W2
   use function_space_collection_mod,  only : function_space_collection
   use operator_mod,                   only : operator_type
@@ -79,7 +79,8 @@ contains
     write(log_scratch_space,'(A)') "solver_miniapp_alg:Initialising solver ..."
     call log_event( log_scratch_space, LOG_LEVEL_INFO )
 
-    qr = quadrature_xyoz_type(nqp_exact, quadrature_rule)
+    qr = quadrature_xyoz_type(nqp_h_exact, nqp_h_exact, nqp_v_exact, &
+                              quadrature_rule)
 
     select case ( preconditioner )
     case ( preconditioner_diagonal )

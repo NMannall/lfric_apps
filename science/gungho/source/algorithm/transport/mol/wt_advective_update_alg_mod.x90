@@ -29,7 +29,8 @@ module wt_advective_update_alg_mod
   use r_tran_field_mod,                   only: r_tran_field_type
   use finite_element_config_mod,          only: element_order_h,          &
                                                 element_order_v,          &
-                                                nqp_exact
+                                                nqp_h_exact,              &
+                                                nqp_v_exact
   use fs_continuity_mod,                  only: W3, Wtheta
   use function_space_mod,                 only: function_space_type
   use function_space_collection_mod,      only: function_space_collection
@@ -407,14 +408,16 @@ contains
         call log_event( "Gungho: FEM Wt advection requires unsplit method", LOG_LEVEL_ERROR )
 
       ! Use project u.grad(adv_field) into the adv_field function space
-      qr = quadrature_xyoz_type(nqp_exact, quadrature_rule)
+      qr = quadrature_xyoz_type(nqp_h_exact, nqp_h_exact, nqp_v_exact, &
+                                quadrature_rule)
 
       ! Quadrature rule on lateral faces only
       horizontal_faces = .true.
       vertical_faces = .false.
       reference_element => mesh%get_reference_element()
-      qrf = quadrature_face_type(nqp_exact, horizontal_faces, vertical_faces, &
-                                 reference_element, quadrature_rule)
+      qrf = quadrature_face_type(nqp_h_exact, nqp_v_exact, horizontal_faces, &
+                                 vertical_faces, reference_element,          &
+                                 quadrature_rule)
       wt_stencil_size = 1_i_def
       w2_stencil_size = 1_i_def
       call invoke( setval_c(u_grad_f, 0.0_r_def),                     &

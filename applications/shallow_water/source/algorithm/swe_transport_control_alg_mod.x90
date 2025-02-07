@@ -16,7 +16,8 @@ module swe_transport_control_alg_mod
   use field_indices_mod,                 only: isw_u, isw_g, isw_b, isw_q
   use finite_element_config_mod,         only: element_order_h, &
                                                element_order_v, &
-                                               nqp_exact
+                                               nqp_h_exact,     &
+                                               nqp_v_exact
   use fs_continuity_mod,                 only: W1, W3, W2v
   use function_space_mod,                only: function_space_type
   use function_space_collection_mod,     only: function_space_collection
@@ -341,7 +342,8 @@ contains
                                                     element_order_v, W2v )
       chi      => get_coordinates(geopot%get_mesh_id())
       panel_id => get_panel_id(geopot%get_mesh_id())
-      qr = quadrature_xyoz_type(nqp_exact, quadrature_rule)
+      qr = quadrature_xyoz_type(nqp_h_exact, nqp_h_exact, nqp_v_exact, &
+                                quadrature_rule)
 
       ! Calculate q*phi
       call invoke( X_times_Y(q_geopot,q,geopot) )

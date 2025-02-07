@@ -315,14 +315,14 @@ contains
     rho_base   => base_state(igh_d)
 
     call rhs_tmp%initialise( vector_space=rhs(igh_u)%get_function_space() )
-    qr       = quadrature_xyoz_type(MAX(element_order_h, element_order_v)+2, &
-                                    gaussian_quadrature)
-    qr_exact = quadrature_xyoz_type(MAX(element_order_h, element_order_v)+3, &
-                                    gaussian_quadrature)
+    qr       = quadrature_xyoz_type(element_order_h+2, element_order_h+2, &
+                                    element_order_v+2, gaussian_quadrature)
+    qr_exact = quadrature_xyoz_type(element_order_h+3, element_order_h+3, &
+                                    element_order_v+3, gaussian_quadrature)
     mesh              => theta%get_mesh()
     reference_element => mesh%get_reference_element()
-    qrf = quadrature_face_type(MAX(element_order_h, element_order_v)+2, &
-                               .true., .false.,                         &
+    qrf = quadrature_face_type(element_order_h+2, element_order_v+2, &
+                               .true., .false.,                      &
                                reference_element, gaussian_quadrature)
 
     ! Initialise RHS u and theta fields

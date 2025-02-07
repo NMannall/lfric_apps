@@ -409,6 +409,34 @@
         "plot_str": "gw_high_order_cart_plot.py diagGungho $NODAL_DATA_DIR 150 8 theta T000000:T000100:T000200:T000300 $PLOT_DIR"
     }) %}
 
+{% elif task_ns.conf_name == "skamarock_klemp_gw_ph1pv0-BiP75x4-4000x2000" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["skamarock_klemp_gw_ph1pv0"],
+        "resolution": "BiP75x4-4000x2000",
+        "DT": 10,
+        "tsteps": 300,
+        "use_xios": false,
+        "mpi_parts": 6,
+        "panel_decomp": "row",
+        "threads": 2,
+        "plot_str": "gw_high_order_cart_plot.py diagGungho $NODAL_DATA_DIR 150 8 theta T000000:T000100:T000200:T000300 $PLOT_DIR"
+    }) %}
+
+{% elif task_ns.conf_name == "skamarock_klemp_gw_ph0pv1-BiP75x4-4000x2000" %}
+
+    {% do task_dict.update({
+        "opt_confs": ["skamarock_klemp_gw_ph0pv1"],
+        "resolution": "BiP75x4-4000x2000",
+        "DT": 10,
+        "tsteps": 300,
+        "use_xios": false,
+        "mpi_parts": 6,
+        "panel_decomp": "row",
+        "threads": 2,
+        "plot_str": "gw_high_order_cart_plot.py diagGungho $NODAL_DATA_DIR 300 8 theta T000000:T000100:T000200:T000300 $PLOT_DIR"
+    }) %}
+
 {% elif task_ns.conf_name == "straka_200m-BiP256x8-200x200" %}
 
     {% do task_dict.update({

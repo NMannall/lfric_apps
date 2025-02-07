@@ -320,7 +320,7 @@ contains
 
     type(quadrature_rule_gaussian_type) :: gaussian_quadrature
 
-    integer(kind=i_def) :: stages, stage, mesh_id, outer, nqp
+    integer(kind=i_def) :: stages, stage, mesh_id, outer, nqp_h, nqp_v
     logical(kind=l_def) :: horizontal_face, vertical_face, cheap_update
 
     if ( subroutine_timers ) call timer('rk_alg')
@@ -330,8 +330,9 @@ contains
     outer = 1_i_def
     horizontal_face = .true.
     vertical_face = .false.
-    nqp = MAX(element_order_h, element_order_v) + 2_i_def
-    qrf = quadrature_face_type(nqp, horizontal_face, vertical_face, &
+    nqp_h = element_order_h + 2_i_def
+    nqp_v = element_order_v + 2_i_def
+    qrf = quadrature_face_type(nqp_h, nqp_v, horizontal_face, vertical_face, &
                                reference_element,  gaussian_quadrature)
     cheap_update = .false.
 

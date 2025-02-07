@@ -21,7 +21,8 @@ module conservation_algorithm_mod
   use field_mod,                       only: field_type
   use finite_element_config_mod,       only: element_order_h, &
                                              element_order_v, &
-                                             nqp_exact
+                                             nqp_h_exact,     &
+                                             nqp_v_exact
   use fs_continuity_mod,               only: W3
   use function_space_mod,              only: function_space_type
   use log_mod,                         only: log_event,         &
@@ -97,7 +98,8 @@ contains
     if ( subroutine_timers ) call timer('conservation_alg')
 
     ! Get a quadrature rule
-    qr = quadrature_xyoz_type(nqp_exact, quadrature_rule)
+    qr = quadrature_xyoz_type(nqp_h_exact, nqp_h_exact, nqp_v_exact, &
+                              quadrature_rule)
     mesh => rho%get_mesh()
     w3_fs => function_space_collection%get_fs( mesh, element_order_h, &
                                                element_order_v, W3)

@@ -86,8 +86,8 @@ contains
     panel_id => get_panel_id(mesh_id)
 
     domain = mesh%get_domain()
-    qr     = quadrature_xyoz_type(MAX(element_order_h, element_order_v)+3, &
-                                  quadrature_rule)
+    qr     = quadrature_xyoz_type(element_order_h+3, element_order_h+3, &
+                                  element_order_v+3, quadrature_rule)
 
     !=== Initialise global prognostic fields ==================================!
 

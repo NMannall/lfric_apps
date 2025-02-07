@@ -19,6 +19,7 @@ module weighted_proj_2thetav_kernel_mod
   use argument_mod,          only: arg_type, func_type,     &
                                    GH_OPERATOR, GH_FIELD,   &
                                    GH_SCALAR, GH_REAL,      &
+                                   GH_INTEGER,              &
                                    GH_READ, GH_WRITE,       &
                                    ANY_SPACE_9,             &
                                    GH_BASIS, GH_DIFF_BASIS, &
@@ -26,7 +27,6 @@ module weighted_proj_2thetav_kernel_mod
   use constants_mod,         only: r_def, i_def, r_solver
   use fs_continuity_mod,     only: W2, W3
   use kernel_mod,            only: kernel_type
-  use reference_element_mod, only: B,T
 
   implicit none
 
@@ -38,11 +38,13 @@ module weighted_proj_2thetav_kernel_mod
 
   type, public, extends(kernel_type) :: weighted_proj_2thetav_kernel_type
     private
-    type(arg_type) :: meta_args(4) = (/                             &
+    type(arg_type) :: meta_args(6) = (/                             &
          arg_type(GH_OPERATOR, GH_REAL, GH_WRITE, W2, ANY_SPACE_9), &
          arg_type(GH_FIELD,    GH_REAL, GH_READ,  W3),              &
          arg_type(GH_FIELD,    GH_REAL, GH_READ,  ANY_SPACE_9),     &
-         arg_type(GH_SCALAR,   GH_REAL, GH_READ)                    &
+         arg_type(GH_SCALAR,   GH_REAL, GH_READ),                   &
+         arg_type(GH_SCALAR,   GH_INTEGER, GH_READ),                &
+         arg_type(GH_SCALAR,   GH_INTEGER, GH_READ)                 &
          /)
     type(func_type) :: meta_funcs(3) = (/                           &
          func_type(W2,          GH_BASIS, GH_DIFF_BASIS),           &
@@ -70,6 +72,8 @@ contains
 !! @param[in] exner Exner pressure
 !! @param[in] moist_dyn_factor The moist dynamics factor for theta
 !! @param[in] scalar Real to scale matrix by
+!! @param[in] element_order_h Horizontal element order of the function space
+!! @param[in] element_order_v Vertical element order of the function space
 !! @param[in] ndf_w2 Number of degrees of freedom per cell
 !! @param[in] basis_w2 Basis functions evaluated at quadrature points
 !! @param[in] diff_basis_w2 Differential vector basis functions evaluated
@@ -93,6 +97,7 @@ subroutine weighted_proj_2thetav_code(cell, nlayers, ncell_3d,             &
                                       exner,                               &
                                       moist_dyn_factor,                    &
                                       scalar,                              &
+                                      element_order_h, element_order_v,    &
                                       ndf_w2, basis_w2, diff_basis_w2,     &
                                       ndf_wtheta, undf_wtheta, map_wtheta, &
                                       basis_wtheta, diff_basis_wtheta,     &
@@ -104,6 +109,8 @@ subroutine weighted_proj_2thetav_code(cell, nlayers, ncell_3d,             &
   ! Arguments
   integer(kind=i_def),                        intent(in) :: cell, nqp_h, nqp_v
   integer(kind=i_def),                        intent(in) :: nlayers
+  integer(kind=i_def),                        intent(in) :: element_order_h
+  integer(kind=i_def),                        intent(in) :: element_order_v
   integer(kind=i_def),                        intent(in) :: ncell_3d
   integer(kind=i_def),                        intent(in) :: undf_w3, ndf_w3, ndf_w2
   integer(kind=i_def),                        intent(in) :: undf_wtheta, ndf_wtheta
@@ -127,6 +134,9 @@ subroutine weighted_proj_2thetav_code(cell, nlayers, ncell_3d,             &
   ! Internal variables
   integer(kind=i_def)                  :: df, df0, df2, k, ik
   integer(kind=i_def)                  :: qp1, qp2
+  integer(kind=i_def)                  :: k_h, k_v
+  integer(kind=i_def)                  :: ndf_w2h, ndf_w2h_vol, ndf_w2v_vol, &
+                                          ndf_w2_vol
   real(kind=r_solver), dimension(ndf_w3)  :: exner_e
   real(kind=r_solver)                     :: integrand
   real(kind=r_solver)                     :: div_gamma_v
@@ -145,6 +155,16 @@ subroutine weighted_proj_2thetav_code(cell, nlayers, ncell_3d,             &
   rsol_basis_wtheta      = real(basis_wtheta, r_solver)
   rsol_diff_basis_wtheta = real(diff_basis_wtheta, r_solver)
 
+  k_h = element_order_h
+  k_v = element_order_v
+
+  ! Calculate numbers of vertical and horizontal dofs of W2 for use in looping
+  ! over vertical dofs
+  ndf_w2h     = 2*(k_h + 1)*(k_h + 2)*(k_v + 1)
+  ndf_w2h_vol = 2*k_h*(k_h + 1)*(k_v + 1)
+  ndf_w2v_vol = (k_h + 1)*(k_h + 1)*k_v
+  ndf_w2_vol  = ndf_w2h_vol + ndf_w2v_vol
+
   do k = 0, nlayers - 1
     ik = k + 1 + (cell-1)*nlayers
     do df = 1,ndf_w3
@@ -161,12 +181,29 @@ subroutine weighted_proj_2thetav_code(cell, nlayers, ncell_3d,             &
         wt = real(wqp_h(qp1)*wqp_v(qp2), r_solver)
         integrand = scalar*exner_quad*wt
         do df0 = 1, ndf_wtheta
-          do df2 = B, T
-            div_gamma_v = rsol_diff_basis_w2(1,df2,qp1,qp2)*rsol_basis_wtheta(1,df0,qp1,qp2) &
-                        + dot_product(rsol_basis_w2(:,df2,qp1,qp2), &
-                                      rsol_diff_basis_wtheta(:,df0,qp1,qp2))
-            projection(ik,df2,df0) = projection(ik,df2,df0) &
-                                   + integrand*div_gamma_v*moist_dyn_factor(map_wtheta(df0)+k)
+          do df2 = ndf_w2h_vol+1, ndf_w2
+            ! W2 dofs are ordered:
+            !   a) Horizontal volume dofs
+            !   b) Vertical volume dofs
+            !   c) Horizontal face dofs
+            !   d) Vertical face dofs
+            ! Only use the vertical dofs of W2, which satisfy one of two
+            ! conditions:
+            !   b) df2 is a vertical volume dof of W2 (higher order spaces
+            !      only), so
+            !        ndf_w2h_vol < df2 <= ndf_w2_vol
+            !   d) df2 is a vertical face dof of W2 (lives on the top or
+            !      bottom face of a cell), so
+            !        ndf_w2h + ndf_w2v_vol < df2
+            if ( df2 <= ndf_w2_vol .or. ndf_w2h + ndf_w2v_vol < df2 ) then
+              div_gamma_v = rsol_diff_basis_w2(1,df2,qp1,qp2)         &
+                            *rsol_basis_wtheta(1,df0,qp1,qp2)         &
+                          + dot_product(rsol_basis_w2(:,df2,qp1,qp2), &
+                                        rsol_diff_basis_wtheta(:,df0,qp1,qp2))
+              projection(ik,df2,df0) = projection(ik,df2,df0) &
+                                     + integrand*div_gamma_v &
+                                       *moist_dyn_factor(map_wtheta(df0)+k)
+            end if
           end do
         end do
       end do

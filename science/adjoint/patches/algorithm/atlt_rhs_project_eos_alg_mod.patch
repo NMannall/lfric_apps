@@ -94,7 +94,7 @@
 -    call chi3(3_i_def)%initialise(vector_space=vector_space_w0_ptr, name='chi3')
 -    call panel_id_1%initialise(vector_space=vector_space_w3_ptr, name='panel_id_1')
 -    qr_xyoz = quadrature_xyoz_type(element_order + 3,quadrature_rule)
-+    qr_xyoz = quadrature_xyoz_type(MAX(element_order_h, element_order_v) + 3,quadrature_rule)
++    qr_xyoz = quadrature_xyoz_type(element_order_h+3, element_order_h+3, element_order_v+3, quadrature_rule)
      call rhs_eos_input%initialise(vector_space=vector_space_w3_ptr, name='rhs_eos_input')
      call exner_input%initialise(vector_space=vector_space_w3_ptr, name='exner_input')
      call rho_input%initialise(vector_space=vector_space_w3_ptr, name='rho_input')

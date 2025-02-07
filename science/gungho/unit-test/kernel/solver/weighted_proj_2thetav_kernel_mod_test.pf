@@ -161,6 +161,8 @@ contains
                                      exner_data,      &
                                      moist_dyn_data,  &
                                      1.0_r_solver,    &
+                                     0,               &
+                                     0,               &
                                      ndf_w2,          &
                                      basis_w2,        &
                                      diff_basis_w2,   &

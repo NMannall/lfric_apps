@@ -20,8 +20,8 @@ module init_gungho_prognostics_alg_mod
                                              get_height
   use sci_fem_constants_mod,           only: get_inverse_mass_matrix, &
                                              get_qr
-  use finite_element_config_mod,       only: element_order_h, element_order_v, &
-                                             nqp_exact
+  use finite_element_config_mod,       only: element_order_h, &
+                                             element_order_v
   use base_mesh_config_mod,            only: geometry,           &
                                              geometry_spherical, &
                                              geometry_planar

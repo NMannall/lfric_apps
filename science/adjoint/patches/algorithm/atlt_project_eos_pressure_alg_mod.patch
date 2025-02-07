@@ -84,7 +84,7 @@
 -    call panel_id_1%initialise(vector_space=vector_space_w3_ptr, name='panel_id_1')
      call m3_inv%initialise(vector_space_w3_ptr, vector_space_w3_ptr)
 -    qr_xyoz = quadrature_xyoz_type(element_order + 3,quadrature_rule)
-+    qr_xyoz = quadrature_xyoz_type(MAX(element_order_h, element_order_v) + 3,quadrature_rule)
++    qr_xyoz = quadrature_xyoz_type(element_order_h+3, element_order_h+3, element_order_v+3, quadrature_rule)
      call exner_input%initialise(vector_space=vector_space_w3_ptr, name='exner_input')
      call rho_input%initialise(vector_space=vector_space_w3_ptr, name='rho_input')
      call theta_input%initialise(vector_space=vector_space_wtheta_ptr, name='theta_input')

@@ -263,8 +263,8 @@ contains
     qr => get_qr()
     mesh => theta%get_mesh()
     reference_element => mesh%get_reference_element()
-    qrf = quadrature_face_type(MAX(element_order_h, element_order_v)+2,        &
-                               .true., .false., reference_element,             &
+    qrf = quadrature_face_type(element_order_h+2, element_order_v+2, &
+                               .true., .false., reference_element,   &
                                gaussian_quadrature)
 
     ! Get mm operators from runtime_constants

@@ -266,8 +266,8 @@ contains
 
     ! Compute Q (projection) operator
     call self%Q%initialise( wu, wb )
-    qr = quadrature_xyoz_type(MAX(element_order_h, element_order_v)+2, &
-                              quadrature_rule)
+    qr = quadrature_xyoz_type(element_order_h+2, element_order_h+2, &
+                              element_order_v+2, quadrature_rule)
     call invoke( compute_q_operator_type(self%Q, qr) )
 
     ! Set \f$ \tilde{H}_b^{-1}\f$

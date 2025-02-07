@@ -15,7 +15,10 @@ module si_operators_alg_mod
   use operator_mod,              only: operator_type, r_solver_operator_type
   use field_mod,                 only: field_type
   use function_space_mod,        only: function_space_type
-  use finite_element_config_mod, only: element_order_h, element_order_v
+  use finite_element_config_mod, only: element_order_h, &
+                                       element_order_v, &
+                                       nqp_h_exact,     &
+                                       nqp_v_exact
   use function_space_collection_mod, &
                                  only: function_space_collection
   use r_solver_field_mod,        only: r_solver_field_type
@@ -375,7 +378,6 @@ contains
     use sci_compound_operator_kernel_mod,     only: compound_operator_kernel_type
     use mg_flux_kernel_mod,                   only: mg_flux_kernel_type
     use sample_flux_kernel_mod,               only: sample_flux_kernel_type
-    use finite_element_config_mod,            only: nqp_exact
     use fs_continuity_mod,                    only: W2
     use sci_geometric_constants_mod,          only: get_coordinates, &
                                                     get_panel_id, &
@@ -511,10 +513,11 @@ contains
 
     ! quadrature rules set once outside MG loop
     reference_element => mesh%get_reference_element()
-    qrf = quadrature_face_type(MAX(element_order_h, element_order_v)+2, &
-                               .true., .false., &
+    qrf = quadrature_face_type(element_order_h+2, element_order_v+2, &
+                               .true., .false.,                      &
                                reference_element, quadrature_rule)
-    qr = quadrature_xyoz_type(nqp_exact, quadrature_rule)
+    qr = quadrature_xyoz_type(nqp_h_exact, nqp_h_exact, nqp_v_exact, &
+                              quadrature_rule)
 
     do level = 1, multigrid_levels
 
@@ -590,8 +593,8 @@ contains
 
        ! The rest of the operators are topological and so do not need as high
        ! quadrature order
-       qr = quadrature_xyoz_type(MAX(element_order_h, element_order_v)+2, &
-                                 quadrature_rule)
+       qr = quadrature_xyoz_type(element_order_h+2, element_order_h+2, &
+                                 element_order_v+2, quadrature_rule)
 
        ! Cell kernels
        const1 = real(tau_u*dt*cp, r_solver)
@@ -603,8 +606,13 @@ contains
          ! The projection operators are restricted to use the vertical only
          call invoke( weighted_proj_2thetav_kernel_type(p2theta(level), exner, &
                                                         moist_dyn_factor,      &
-                                                        const1, qr),           &
-                      weighted_proj_theta2v_kernel_type(ptheta2(level), theta, const2, qr) )
+                                                        const1,                &
+                                                        element_order_h,       &
+                                                        element_order_v, qr),  &
+                      weighted_proj_theta2v_kernel_type(ptheta2(level), theta, &
+                                                        const2,                &
+                                                        element_order_h,       &
+                                                        element_order_v, qr) )
        else
          ! The projection operators use horizonal and vertical
          call invoke( weighted_proj_2theta_kernel_type(p2theta(level), exner,  &
@@ -616,9 +624,11 @@ contains
                                                           req_stencil_depth,               &
                                                           moist_dyn_factor, const1, qrf) )
        end if
-       call invoke( name = "cell_and_boundary_kernels_vert",                          &
-          weighted_div_kernel_type(div_star(level), theta_v, const1, qr),             &
-          weighted_proj_theta2_vert_kernel_type(ptheta2v(level), theta, const2, qr),  &
+       call invoke( name = "cell_and_boundary_kernels_vert",              &
+          weighted_div_kernel_type(div_star(level), theta_v, const1, qr), &
+          weighted_proj_theta2_vert_kernel_type(ptheta2v(level), theta,   &
+                                                const2, element_order_h,  &
+                                                element_order_v, qr),     &
           ! Boundary kernels
           weighted_div_bd_kernel_type(div_star(level), theta_v, req_stencil_depth,    &
                                       const1, qrf),                                   &

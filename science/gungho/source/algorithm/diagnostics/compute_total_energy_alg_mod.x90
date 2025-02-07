@@ -21,7 +21,8 @@ module compute_total_energy_alg_mod
   use field_collection_mod,          only: field_collection_type
   use finite_element_config_mod,     only: element_order_h, &
                                            element_order_v, &
-                                           nqp_exact
+                                           nqp_h_exact,     &
+                                           nqp_v_exact
   use fs_continuity_mod,             only: W3, Wtheta
   use function_space_collection_mod, only: function_space_collection
   use function_space_mod,            only: function_space_type
@@ -131,7 +132,8 @@ contains
 
     select case( integral_method )
     case( integral_method_fe )
-      qr = quadrature_xyoz_type( nqp_exact, quadrature_rule )
+      qr = quadrature_xyoz_type( nqp_h_exact, nqp_h_exact, nqp_v_exact, &
+                                 quadrature_rule )
       w3_fs => function_space_collection%get_fs( mesh, element_order_h, &
                                                  element_order_v, W3 )
       chi => get_coordinates( mesh%get_id() )

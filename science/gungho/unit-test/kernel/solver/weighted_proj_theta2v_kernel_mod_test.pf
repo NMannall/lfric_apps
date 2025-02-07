@@ -146,6 +146,8 @@ contains
                                      local_stencil,   &
                                      theta_data,      &
                                      1.0_r_solver,    &
+                                     0,               &
+                                     0,               &
                                      ndf_wt,          &
                                      undf_wt,         &
                                      map_wt(:,cell),  &

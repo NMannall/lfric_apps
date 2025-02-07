@@ -73,7 +73,7 @@
      call ls_moist_dyn_fac(2_i_def)%initialise(vector_space=vector_space_wtheta_ptr, name='ls_moist_dyn_fac')
      call ls_moist_dyn_fac(3_i_def)%initialise(vector_space=vector_space_wtheta_ptr, name='ls_moist_dyn_fac')
 -    qr_xyoz = quadrature_xyoz_type(element_order + 3,quadrature_rule)
-+    qr_xyoz = quadrature_xyoz_type(MAX(element_order_h, element_order_v) + 3,quadrature_rule)
++    qr_xyoz = quadrature_xyoz_type(element_order_h+3, element_order_h+3, element_order_v+3, quadrature_rule)
      call r_u_input%initialise(vector_space=vector_space_w2_ptr, name='r_u_input')
      call exner_input%initialise(vector_space=vector_space_w3_ptr, name='exner_input')
      call theta_input%initialise(vector_space=vector_space_wtheta_ptr, name='theta_input')

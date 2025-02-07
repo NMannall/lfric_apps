@@ -209,8 +209,8 @@ contains
 
     ! Create Q operator
     call Q%initialise( u_fs, b_fs)
-    qr = quadrature_xyoz_type(MAX(element_order_h, element_order_v)+2, &
-                              quadrature_rule)
+    qr = quadrature_xyoz_type(element_order_h+2, element_order_h+2, &
+                              element_order_v+2, quadrature_rule)
     nlayers = mesh%get_nlayers()
     allocate ( dz(nlayers) )
     call mesh%get_dz(dz)
