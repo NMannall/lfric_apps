@@ -53,7 +53,10 @@ module um_physics_init_mod
                                         reduce_fa_mix, noice_in_turb,          &
                                         reduce_fa_mix_inv_and_cu_lcl,          &
                                         reduce_fa_mix_inv_only,                &
-                                        relax_sc_over_cu_in=>relax_sc_over_cu, &
+                                        sc_diag_opt_in => sc_diag_opt,         &
+                                        sc_diag_opt_orig, sc_diag_opt_cu_relax,&
+                                        sc_diag_opt_cu_rh_max,                 &
+                                        sc_diag_opt_all_rh_max,                &
                                         sbl_opt, sbl_opt_sharpest,             &
                                         sbl_opt_sharp_sea_mes_land,            &
                                         sg_orog_mixing_in => sg_orog_mixing,   &
@@ -66,7 +69,16 @@ module um_physics_init_mod
                                         kprof_cu_buoy_integ_low,               &
                                         ng_stress_in => ng_stress,             &
                                         ng_stress_BG97_limited,                &
-                                        ng_stress_BG97_original
+                                        ng_stress_BG97_original,               &
+                                entr_smooth_dec_in     => entr_smooth_dec,     &
+                                entr_smooth_dec_off, entr_smooth_dec_on,       &
+                                entr_smooth_dec_taper_zh,                      &
+                                dzrad_disc_opt_in      => dzrad_disc_opt,      &
+                                dzrad_disc_opt_level_ntm1,                     &
+                                dzrad_disc_opt_smooth_1p5,                     &
+                                l_use_sml_dsc_fixes_in => l_use_sml_dsc_fixes, &
+                                l_converge_ga_in       => l_converge_ga,       &
+                                num_sweeps_bflux_in    => num_sweeps_bflux
 
   use cloud_config_mod,          only : scheme, scheme_smith, scheme_pc2,     &
                                         scheme_bimodal,                       &
@@ -110,7 +122,8 @@ module um_physics_init_mod
                                      par_gen_mass_fac_in => par_gen_mass_fac, &
                                      par_gen_rhpert_in => par_gen_rhpert,     &
                                      par_radius_ppn_max_in => par_radius_ppn_max, &
-                                     resdep_precipramp, dx_ref_in => dx_ref
+                                     resdep_precipramp, dx_ref_in => dx_ref,   &
+                                     l_cvdiag_ctop_qmax_in => l_cvdiag_ctop_qmax
 
 
   use extrusion_config_mod,      only : domain_height, number_of_layers
@@ -278,8 +291,11 @@ contains
     use bl_option_mod, only: i_bl_vn, sbl_op, ritrans,                     &
          cbl_op, lambda_min_nml, local_fa, keep_ri_fa,                     &
          sg_orog_mixing, fric_heating, idyndiag,                           &
-         zhloc_depth_fac, flux_grad, entr_smooth_dec,                      &
-         relax_sc_over_cu, bl_res_inv, blending_option,                    &
+         zhloc_depth_fac, flux_grad, entr_smooth_dec, entr_taper_zh,       &
+         dzrad_disc_opt, dzrad_ntm1, dzrad_1p5dz,                          &
+         sc_diag_opt, sc_diag_orig, sc_diag_cu_relax, sc_diag_cu_rh_max,   &
+         sc_diag_all_rh_max,                                               &
+         bl_res_inv, blending_option,                                      &
          a_ent_shr_nml, alpha_cd, puns, pstb, kprof_cu,                    &
          non_local_bl, flux_bc_opt, i_bl_vn_9c, sharp_sea_mes_land,        &
          lem_conven, to_sharp_across_1km, off, on, DynDiag_Ribased,        &
@@ -293,7 +309,8 @@ contains
          split_tke_and_inv, l_noice_in_turb, l_use_var_fixes,              &
          i_interp_local_cf_dbdz, tke_diag_fac, a_ent_2, dec_thres_cloud,   &
          dec_thres_cu, near_neut_z_on_l, blend_gridindep_fa,               &
-         specified_fluxes_tstar, buoy_integ_low
+         specified_fluxes_tstar, buoy_integ_low, num_sweeps_bflux,         &
+         l_use_sml_dsc_fixes, l_converge_ga
     use cloud_inputs_mod, only: i_cld_vn, forced_cu, i_rhcpt, i_cld_area,  &
          rhcrit, ice_fraction_method,falliceshear_method, cff_spread_rate, &
          l_subgrid_qv, ice_width, min_liq_overlap, i_eacf, not_mixph,      &
@@ -346,7 +363,8 @@ contains
          adv_conv_prog_dtheta, adv_conv_prog_dq,                           &
          tau_conv_prog_precip, tau_conv_prog_dtheta, tau_conv_prog_dq,     &
          prog_ent_grad, prog_ent_int, prog_ent_max, prog_ent_min,          &
-         ent_fac_sh, c_mass_sh, orig_mdet_fac, i_cv_comorph
+         ent_fac_sh, c_mass_sh, orig_mdet_fac, i_cv_comorph,               &
+         l_cvdiag_ctop_qmax
     use cv_param_mod, only: mtrig_ntml, md_pert_efrac
     use cv_stash_flg_mod, only: set_convection_output_flags
     use cv_set_dependent_switches_mod, only: cv_set_dependent_switches
@@ -580,7 +598,22 @@ contains
 
       dec_thres_cloud = real(dec_thres_cloud_in, r_bl)
       dec_thres_cu = real(dec_thres_cu_in, r_bl)
-      entr_smooth_dec = on
+
+      select case ( entr_smooth_dec_in )
+      case ( entr_smooth_dec_off )
+        entr_smooth_dec = off
+      case ( entr_smooth_dec_on )
+        entr_smooth_dec = on
+      case ( entr_smooth_dec_taper_zh )
+        entr_smooth_dec = entr_taper_zh
+      end select
+
+      select case ( dzrad_disc_opt_in )
+      case ( dzrad_disc_opt_level_ntm1 )
+        dzrad_disc_opt = dzrad_ntm1
+      case ( dzrad_disc_opt_smooth_1p5 )
+        dzrad_disc_opt = dzrad_1p5dz
+      end select
 
       select case (flux_bc_opt_in)
         case(flux_bc_opt_interactive, flux_bc_opt_specified_tstar)
@@ -658,11 +691,16 @@ contains
       pstb = 2.0_r_um
       puns = real(p_unstable, r_um)
 
-      if (relax_sc_over_cu_in) then
-        relax_sc_over_cu = on
-      else
-        relax_sc_over_cu = off
-      end if
+      select case ( sc_diag_opt_in )
+      case ( sc_diag_opt_orig )
+        sc_diag_opt = sc_diag_orig
+      case ( sc_diag_opt_cu_relax )
+        sc_diag_opt = sc_diag_cu_relax
+      case ( sc_diag_opt_cu_rh_max )
+        sc_diag_opt = sc_diag_cu_rh_max
+      case ( sc_diag_opt_all_rh_max )
+        sc_diag_opt = sc_diag_all_rh_max
+      end select
 
       ritrans = 0.1_r_bl
 
@@ -691,6 +729,10 @@ contains
         l_skyview = .true.
       end if
 
+      l_use_sml_dsc_fixes = l_use_sml_dsc_fixes_in
+      l_converge_ga       = l_converge_ga_in
+      num_sweeps_bflux    = num_sweeps_bflux_in
+
     end if
 
     ! ----------------------------------------------------------------
@@ -717,6 +759,7 @@ contains
     tv1_sd_opt           = 2
     w_cape_limit         = 0.4_r_um
     l_reset_neg_delthvu  = .true.
+    l_cvdiag_ctop_qmax   = l_cvdiag_ctop_qmax_in
 
     if ( convection == convection_um ) then
 

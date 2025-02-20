@@ -47,7 +47,7 @@ class vn20_t334(MacroUpgrade):
 
 
 class vn20_t552(MacroUpgrade):
-    """Upgrade macro for ticket None by None."""
+    """Upgrade macro for ticket #552 by Adrian Lock."""
 
     BEFORE_TAG = "vn2.0_t334"
     AFTER_TAG = "vn2.0_t552"
@@ -57,5 +57,18 @@ class vn20_t552(MacroUpgrade):
         nml = "namelist:convection"
         self.add_setting(config, [nml, "resdep_precipramp"], ".false.")
         self.add_setting(config, [nml, "dx_ref"], "50000.0")
+        return config, self.reports
+
+
+class vn20_t472(MacroUpgrade):
+    """Upgrade macro for ticket #472 by Mike Whitall."""
+
+    BEFORE_TAG = "vn2.0_t552"
+    AFTER_TAG = "vn2.0_t472"
+
+    def upgrade(self, config, meta_config=None):
+        # Commands From: rose-meta/um-convection
+        nml = "namelist:convection"
+        self.add_setting(config, [nml, "l_cvdiag_ctop_qmax"], ".false.")
 
         return config, self.reports
