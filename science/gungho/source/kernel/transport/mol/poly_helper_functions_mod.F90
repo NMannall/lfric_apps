@@ -39,7 +39,7 @@ contains
 !> @param[in]     nmonomial    Number of monomials in the polynomial fit
 subroutine buildadvcoeff( int_monomial, ns, nmonomial )
 
-  use matrix_invert_mod, only: matrix_invert
+  use matrix_invert_mod, only: matrix_invert_lu
 
   implicit none
 
@@ -69,7 +69,7 @@ subroutine buildadvcoeff( int_monomial, ns, nmonomial )
   m(nmonomial+1:nm,nmonomial+1:nm) = 0.0_r_def
 
   ! Invert matrix
-  call matrix_invert(m,minv,nm)
+  call matrix_invert_lu(m,minv,nm)
 
   ! Matrix relating cell integrals to RHS of linear system
   r(1:nmonomial,1:ns) = lt(1:nmonomial,1:ns)

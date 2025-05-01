@@ -91,7 +91,7 @@ subroutine set_rho_code(nlayers, rho,                           &
                         ndf_pid, undf_pid, map_pid,             &
                         nqp_h, nqp_v, wqp_h, wqp_v )
 
-  use matrix_invert_mod,             only : matrix_invert
+  use matrix_invert_mod,             only : matrix_invert_lu
   use sci_coordinate_jacobian_mod,   only : coordinate_jacobian
   use sci_chi_transform_mod,         only : chi2xyz
   use analytic_density_profiles_mod, only : analytic_density
@@ -185,7 +185,7 @@ subroutine set_rho_code(nlayers, rho,                           &
        end do
     end do
 ! Solve
-    call matrix_invert(mass_matrix_w3,inv_mass_matrix_w3,ndf_rho)
+    call matrix_invert_lu(mass_matrix_w3,inv_mass_matrix_w3,ndf_rho)
     rho_e = matmul(inv_mass_matrix_w3,rhs_e)
     do df1 = 1,ndf_rho
       rho(map_rho(df1)+k) = rho_e(df1)

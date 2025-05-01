@@ -153,7 +153,7 @@ subroutine poly1d_flux_coeffs_code(one_layer,                  &
                                    nfaces_qr, nqp_f, wqp_f )
 
 
-  use matrix_invert_mod,         only: matrix_invert
+  use matrix_invert_mod,         only: matrix_invert_lu
   use cross_product_mod,         only: cross_product
   use base_mesh_config_mod,      only: geometry, &
                                        geometry_spherical
@@ -357,7 +357,7 @@ subroutine poly1d_flux_coeffs_code(one_layer,                  &
       end do quadrature_loop
     end do stencil_loop
     ! Manipulate the integrals of monomials
-    call matrix_invert(int_monomial, inv_int_monomial, nmonomial)
+    call matrix_invert_lu(int_monomial, inv_int_monomial, nmonomial)
 
     ! Loop over quadrature points on this face
     face_quadrature_loop: do qp = 1,nqp_f

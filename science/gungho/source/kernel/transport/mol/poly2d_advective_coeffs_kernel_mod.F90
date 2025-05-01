@@ -165,7 +165,6 @@ subroutine poly2d_advective_coeffs_code(one_layer,                  &
                                         nqp_h, nqp_v, wqp_h, wqp_v, &
                                         nedges_qr, nqp_e, wqp_e )
 
-  use matrix_invert_mod,         only: matrix_invert
   use cross_product_mod,         only: cross_product
   use base_mesh_config_mod,      only: geometry, &
                                        geometry_spherical

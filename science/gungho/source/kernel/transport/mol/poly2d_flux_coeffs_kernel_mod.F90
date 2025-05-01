@@ -160,7 +160,6 @@ subroutine poly2d_flux_coeffs_code(one_layer,                  &
                                    nfaces_qr, nqp_f, wqp_f )
 
 
-  use matrix_invert_mod,         only: matrix_invert
   use cross_product_mod,         only: cross_product
   use base_mesh_config_mod,      only: geometry, &
                                        geometry_spherical

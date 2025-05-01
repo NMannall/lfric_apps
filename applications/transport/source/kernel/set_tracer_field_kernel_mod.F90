@@ -96,7 +96,7 @@ subroutine set_tracer_field_code(nlayers, tracer,                        &
                                  ndf_pid, undf_pid, map_pid,             &
                                  nqp_h, nqp_v, wqp_h, wqp_v )
 
-  use matrix_invert_mod,                  only : matrix_invert
+  use matrix_invert_mod,                  only : matrix_invert_lu
   use sci_coordinate_jacobian_mod,        only : coordinate_jacobian
   use sci_chi_transform_mod,              only : chi2xyz
   use analytic_tracer_field_profiles_mod, only : analytic_tracer_field
@@ -197,7 +197,7 @@ subroutine set_tracer_field_code(nlayers, tracer,                        &
        end do
     end do
 ! Solve
-    call matrix_invert(mass_matrix_trc,inv_mass_matrix_trc,ndf_trc)
+    call matrix_invert_lu(mass_matrix_trc,inv_mass_matrix_trc,ndf_trc)
     trc_e = matmul(inv_mass_matrix_trc,rhs_e)
     do df1 = 1,ndf_trc
       tracer(map_trc(df1)+k) = trc_e(df1)

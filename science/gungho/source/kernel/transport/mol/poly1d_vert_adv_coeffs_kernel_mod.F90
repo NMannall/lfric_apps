@@ -80,7 +80,7 @@ subroutine poly1d_vert_adv_coeffs_code( nlayers, &
                                         undf_wx, &
                                         map_wx )
 
-  use matrix_invert_mod,         only: matrix_invert
+  use matrix_invert_mod,         only: matrix_invert_lu
   implicit none
 
   ! Arguments
@@ -172,7 +172,7 @@ subroutine poly1d_vert_adv_coeffs_code( nlayers, &
           end if
         end do
       end do
-      call matrix_invert(monomial, inv_monomial, np)
+      call matrix_invert_lu(monomial, inv_monomial, np)
 
       do p = 1, np
         delta = 0.0_r_def

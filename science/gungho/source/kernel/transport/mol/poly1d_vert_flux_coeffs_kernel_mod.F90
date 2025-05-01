@@ -96,7 +96,7 @@ subroutine poly1d_vert_flux_coeffs_code(nlayers,                    &
                                         basis_wx,                   &
                                         nqp_h, nqp_v, wqp_h, wqp_v )
 
-  use matrix_invert_mod, only: matrix_invert
+  use matrix_invert_mod, only: matrix_invert_lu
 
   implicit none
 
@@ -197,7 +197,7 @@ subroutine poly1d_vert_flux_coeffs_code(nlayers,                    &
           end do
         end do
       end do quadrature_loop
-      call matrix_invert(monomial, inv_monomial, np)
+      call matrix_invert_lu(monomial, inv_monomial, np)
 
       ! Fit polynomial P = a0 + a1*z + a2*z^2 + a3*z^3 to d
       ! by solving M * [a0, a1, a2, a3]^T = [d(1), d(2), d(3), d(4)]^T

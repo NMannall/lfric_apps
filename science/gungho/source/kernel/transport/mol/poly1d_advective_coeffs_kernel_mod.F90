@@ -157,7 +157,7 @@ subroutine poly1d_advective_coeffs_code(one_layer,                 &
                                         nqp_h, nqp_v, wqp_h, wqp_v,&
                                         n_edges, nqp_e, wqp_e )
 
-  use matrix_invert_mod,         only: matrix_invert
+  use matrix_invert_mod,         only: matrix_invert_lu
   use cross_product_mod,         only: cross_product
   use base_mesh_config_mod,      only: geometry, &
                                        geometry_spherical
@@ -375,7 +375,7 @@ subroutine poly1d_advective_coeffs_code(one_layer,                 &
     end do stencil_loop
 
     ! Manipulate the integrals of monomials
-    call matrix_invert(int_monomial, inv_int_monomial, nmonomial)
+    call matrix_invert_lu(int_monomial, inv_int_monomial, nmonomial)
 
     ! Loop over quadrature points on this edge
     edge_quadrature_loop: do qp = 1,nqp_e
