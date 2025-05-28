@@ -28,15 +28,15 @@ module atlt_w3h_advective_update_alg_mod
 
   contains
   !=============================================================================
-  !> @brief   Adjoint test for invoke_atl_w3h_adv_upd_kernel.
+  !> @brief   Adjoint test for atl_w3h_advective_update_kernel.
   !> @details Passes if adjoint is transpose of tangent linear.
   !>          Determined by testing the equality of inner products <Mx, Mx> and <AMx, x>,
   !>          where M is the tangent linear and A is the adjoint.
   !> @param[in]  mesh         The model mesh
   subroutine atlt_w3h_advective_update_alg( mesh )
 
-    use tl_w3h_advective_update_kernel_mod, only : tl_w3h_advective_update_kernel_type
-    use invoke_atl_w3h_adv_upd_mod,         only : invoke_atl_w3h_adv_upd_kernel_type
+    use tl_w3h_advective_update_kernel_mod,  only : tl_w3h_advective_update_kernel_type
+    use atl_w3h_advective_update_kernel_mod, only : atl_w3h_advective_update_kernel_type
 
     implicit none
 
@@ -86,9 +86,14 @@ module atlt_w3h_advective_update_alg_mod
     vector_space_w2_ptr => function_space_collection % get_fs(                 &
         mesh, element_order_h, element_order_v, W2                             &
     )
-    call advective_increment % initialise( vector_space=vector_space_w3_ptr, name='advective_increment' )
-    call tracer % initialise( vector_space=vector_space_w3_md_ptr, name='tracer ')
-    call ls_wind % initialise( vector_space=vector_space_w2_ptr, name='ls_wind' )
+
+    ! Stencil fields need bigger halos due to atl_w3h being a stencil operation with GH_INC.
+    call advective_increment % initialise( vector_space=vector_space_w3_ptr, name='advective_increment', &
+                                           halo_depth=1_i_def )
+    call tracer % initialise( vector_space=vector_space_w3_md_ptr, name='tracer ', &
+                              halo_depth=stencil_extent + 1_i_def )
+    call ls_wind % initialise( vector_space=vector_space_w2_ptr, name='ls_wind', &
+                               halo_depth=stencil_extent + 1_i_def )
     call wind % initialise( vector_space=vector_space_w2_ptr, name='wind' )
     call advective_increment_input % initialise( vector_space=vector_space_w3_ptr, name='advective_increment_input' )
     call wind_input % initialise( vector_space=vector_space_w2_ptr, name='wind_input' )
@@ -131,16 +136,18 @@ module atlt_w3h_advective_update_alg_mod
     advective_increment_advective_increment_input_inner_prod = 0.0_r_def
     wind_wind_input_inner_prod = 0.0_r_def
 
-    call invoke_atl_w3h_adv_upd_kernel_type( advective_increment, &
-                                             tracer, stencil_extent, &
-                                             ls_wind, stencil_extent, &
-                                             wind, &
-                                             m3_inv )
-    call invoke( x_innerproduct_y( advective_increment_advective_increment_input_inner_prod, &
-                                   advective_increment, &
-                                   advective_increment_input ), &
+    call invoke( atl_w3h_advective_update_kernel_type( advective_increment, &
+                                                       tracer,              &
+                                                       stencil_extent,      &
+                                                       ls_wind,             &
+                                                       stencil_extent,      &
+                                                       wind,                &
+                                                       m3_inv ),            &
+                 x_innerproduct_y( advective_increment_advective_increment_input_inner_prod, &
+                                   advective_increment,                                      &
+                                   advective_increment_input ),                              &
                  x_innerproduct_y( wind_wind_input_inner_prod, &
-                                   wind, &
+                                   wind,                       &
                                    wind_input ) )
 
     inner2 = 0.0_r_def

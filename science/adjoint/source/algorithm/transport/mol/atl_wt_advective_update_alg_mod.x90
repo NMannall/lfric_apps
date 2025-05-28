@@ -174,7 +174,7 @@ contains
     use poly1d_reconstruction_kernel_mod, only : poly1d_reconstruction_kernel_type
     use poly2d_reconstruction_kernel_mod, only : poly2d_reconstruction_kernel_type
     use polyh_wtheta_koren_kernel_mod,    only : polyh_wtheta_koren_kernel_type
-    use invoke_atl_poly_adv_update_mod,   only : invoke_atl_poly_adv_update_kernel_type
+    use atl_poly_adv_update_kernel_mod,   only : atl_poly_adv_update_kernel_type
     use transport_config_mod,             only : oned_reconstruction,  &
                                                  extended_mesh
     use transport_enumerated_types_mod,   only : horizontal_monotone_koren
@@ -200,6 +200,9 @@ contains
 
     type(field_type), target  :: ls_remap_field, ls_field_big_halo
     type(field_type), pointer :: ls_field_ptr
+
+    type(field_type) :: ls_h_reconstruction_big_halo
+    type(field_type) :: wind_dir_big_halo
 
     logical(kind=l_def) :: monotone
     integer(kind=i_def) :: remap_depth
@@ -272,12 +275,22 @@ contains
 
     end if
 
-    stencil_extent = 1
-    call invoke_atl_poly_adv_update_kernel_type( u_grad_f,            &
-                                                 ls_h_reconstruction, &
-                                                 wind,                &
-                                                 wind_dir,            &
-                                                 stencil_extent, stencil_extent )
+    stencil_extent = 1_i_def
+
+    ! Stencil fields need bigger halos due to atl_poly being a stencil operation with GH_INC.
+    call wind_dir_big_halo % initialise( wind_dir % get_function_space(), &
+                                         halo_depth=stencil_extent + 1_i_def )
+    call ls_h_reconstruction_big_halo % initialise( ls_h_reconstruction % get_function_space(), &
+                                                    halo_depth=stencil_extent + 1_i_def )
+
+    call invoke( setval_X( ls_h_reconstruction_big_halo, ls_h_reconstruction ), &
+                 setval_X( wind_dir_big_halo, wind_dir ),                       &
+                 atl_poly_adv_update_kernel_type( u_grad_f,                     &
+                                                  ls_h_reconstruction_big_halo, &
+                                                  stencil_extent,               &
+                                                  wind,                         &
+                                                  wind_dir_big_halo,            &
+                                                  stencil_extent) )
 
   end subroutine atl_hori_wt_update_alg
 

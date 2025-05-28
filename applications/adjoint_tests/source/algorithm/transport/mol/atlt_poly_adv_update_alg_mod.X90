@@ -30,7 +30,7 @@ module atlt_poly_adv_update_alg_mod
   subroutine atlt_poly_adv_update_alg( mesh )
 
     use poly_adv_update_kernel_mod,     only : poly_adv_update_kernel_type
-    use invoke_atl_poly_adv_update_mod, only : invoke_atl_poly_adv_update_kernel_type
+    use atl_poly_adv_update_kernel_mod, only : atl_poly_adv_update_kernel_type
 
     ! Arguments
     type(mesh_type), pointer, intent(in) :: mesh
@@ -77,10 +77,13 @@ module atlt_poly_adv_update_alg_mod
     vector_space_wtheta_ptr => function_space_collection % get_fs(             &
         mesh, element_order_h, element_order_v, Wtheta                         &
     )
+    ! Stencil fields need bigger halos due to atl_poly being a stencil operation with GH_INC.
     call advective % initialise( vector_space=vector_space_wtheta_ptr, name='advective' )
     call wind % initialise( vector_space=vector_space_w2h_ptr, name='wind' )
-    call ls_reconstruction % initialise( vector_space=vector_space_wt_md_ptr, name='ls_reconstruction' )
-    call wind_dir % initialise( vector_space=vector_space_w2h_ptr, name='wind_dir' )
+    call ls_reconstruction % initialise( vector_space=vector_space_wt_md_ptr, name='ls_reconstruction', &
+                                         halo_depth=stencil_extent + 1_i_def )
+    call wind_dir % initialise( vector_space=vector_space_w2h_ptr, name='wind_dir', &
+                                halo_depth=stencil_extent + 1_i_def )
     call advective_input % initialise( vector_space=vector_space_wtheta_ptr, name='advective_input' )
     call wind_input % initialise( vector_space=vector_space_w2h_ptr, name='wind_input' )
 
@@ -120,12 +123,11 @@ module atlt_poly_adv_update_alg_mod
     advective_advective_input_inner_prod = 0.0_r_def
     wind_wind_input_inner_prod = 0.0_r_def
 
-    call invoke_atl_poly_adv_update_kernel_type( advective,         &
-                                                 ls_reconstruction, &
-                                                 wind,              &
-                                                 wind_dir,          &
-                                                 stencil_extent, stencil_extent )
-    call invoke( x_innerproduct_y( advective_advective_input_inner_prod, &
+    call invoke( atl_poly_adv_update_kernel_type( advective,                         &
+                                                  ls_reconstruction, stencil_extent, &
+                                                  wind,                              &
+                                                  wind_dir, stencil_extent ),        &
+                 x_innerproduct_y( advective_advective_input_inner_prod, &
                                    advective,                            &
                                    advective_input ),                    &
                  x_innerproduct_y( wind_wind_input_inner_prod,           &

@@ -25,7 +25,7 @@ module atl_advective_and_flux_alg_mod
   use w3v_advective_update_kernel_mod,     only: w3v_advective_update_kernel_type
   use horizontal_mass_flux_kernel_mod,     only: horizontal_mass_flux_kernel_type
   use vertical_mass_flux_kernel_mod,       only: vertical_mass_flux_kernel_type
-  use invoke_atl_w3h_adv_upd_mod,          only: invoke_atl_w3h_adv_upd_kernel_type
+  use atl_w3h_advective_update_kernel_mod, only: atl_w3h_advective_update_kernel_type
   use adj_w3h_advective_update_kernel_mod, only: adj_w3h_advective_update_kernel_type
   use atl_w3v_advective_update_kernel_mod, only: atl_w3v_advective_update_kernel_type
   use adj_w3v_advective_update_kernel_mod, only: adj_w3v_advective_update_kernel_type
@@ -93,6 +93,8 @@ contains
     type(function_space_type), pointer :: recon_fs
     type(field_type)                   :: reconstruction_field, &
                                           ls_reconstruction_field, &
+                                          ls_reconstruction_field_big_halo, &
+                                          ls_wind_big_halo, &
                                           dummy_recon
     logical(kind=l_def)                :: do_horizontal
     logical(kind=l_def)                :: do_vertical
@@ -178,9 +180,23 @@ contains
           end if
 
           if ( do_horizontal ) then
+            ! Need bigger halos due to atl_w3h being a stencil operation with GH_INC.
+            call ls_reconstruction_field_big_halo % initialise( ls_reconstruction_field % get_function_space(), &
+                                                                halo_depth=stencil_depth + 1_i_def )
+            call ls_wind_big_halo % initialise( ls_wind % get_function_space(), &
+                                                halo_depth=stencil_depth + 1_i_def )
+
+            call invoke( setval_X( ls_reconstruction_field_big_halo, ls_reconstruction_field ),  &
+                         setval_X( ls_wind_big_halo, ls_wind ),                                  &
+                         atl_w3h_advective_update_kernel_type( adv_inc_2,                        &
+                                                               ls_reconstruction_field_big_halo, &
+                                                               stencil_depth,                    &
+                                                               ls_wind_big_halo,                 &
+                                                               stencil_depth,                    &
+                                                               wind,                             &
+                                                               m3_inv ) )
+
             call reconstruction_field % copy_field_properties( dummy_recon )
-            call invoke_atl_w3h_adv_upd_kernel_type( adv_inc_2, ls_reconstruction_field, stencil_depth, &
-                                                     ls_wind, stencil_depth, wind, m3_inv )
             call invoke( name = 'w3h_adv_upd', &
                          adj_w3h_advective_update_kernel_type( adv_inc_1, reconstruction_field, dummy_recon, stencil_depth, &
                                                                ls_wind, stencil_depth, m3_inv ) )
