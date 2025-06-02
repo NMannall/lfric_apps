@@ -13,8 +13,9 @@
 !!         by passing a second set of "dummy" fields in READ mode with a STENCIL.
 !!         See PSyclone issue #3003.
 module psykal_lite_gen_lookup_tables_psy_mod
-  USE constants_mod, ONLY: r_tran, i_def, r_def
+  USE constants_mod, ONLY: r_tran, r_solver, i_def, r_def
   USE r_tran_field_mod, ONLY: r_tran_field_type, r_tran_field_proxy_type
+  USE r_solver_field_mod, ONLY: r_solver_field_type, r_solver_field_proxy_type
   USE integer_field_mod, ONLY: integer_field_type, integer_field_proxy_type
   USE operator_mod, ONLY: operator_type, operator_proxy_type
   IMPLICIT NONE
@@ -686,5 +687,145 @@ module psykal_lite_gen_lookup_tables_psy_mod
     !
     !
   END SUBROUTINE invoke_gen_w3h_adv_upd_lookup_kernel
+
+  SUBROUTINE invoke_gen_apply_helmholtz_op_lookup_kernel(dummy_w3_big_halo, lookup_field, set_counts_field, lookup_field_dummy, &
+&set_counts_field_dummy, nindices, stencil_extent, loop_halo_depth)
+    USE gen_apply_helmholtz_op_lookup_kernel_mod, ONLY: gen_apply_helmholtz_op_lookup_code
+    USE mesh_mod, ONLY: mesh_type
+    USE stencil_2D_dofmap_mod, ONLY: stencil_2D_dofmap_type, STENCIL_2D_CROSS
+    INTEGER(KIND=i_def), intent(in) :: nindices
+    TYPE(r_solver_field_type), intent(in) :: dummy_w3_big_halo
+    TYPE(integer_field_type), intent(in) :: lookup_field, set_counts_field, lookup_field_dummy, set_counts_field_dummy
+    INTEGER(KIND=i_def), intent(in) :: stencil_extent
+    INTEGER, intent(in) :: loop_halo_depth
+    INTEGER(KIND=i_def) cell
+    INTEGER(KIND=i_def) loop0_start, loop0_stop
+    INTEGER(KIND=i_def) nlayers_dummy_w3_big_halo
+    INTEGER(KIND=i_def), pointer, dimension(:) :: set_counts_field_dummy_data
+    INTEGER(KIND=i_def), pointer, dimension(:) :: lookup_field_dummy_data
+    INTEGER(KIND=i_def), pointer, dimension(:) :: set_counts_field_data
+    INTEGER(KIND=i_def), pointer, dimension(:) :: lookup_field_data
+    TYPE(integer_field_proxy_type) lookup_field_proxy, set_counts_field_proxy, lookup_field_dummy_proxy, &
+&set_counts_field_dummy_proxy
+    REAL(KIND=r_solver), pointer, dimension(:) :: dummy_w3_big_halo_data
+    TYPE(r_solver_field_proxy_type) dummy_w3_big_halo_proxy
+    INTEGER(KIND=i_def), pointer :: map_adspc1_lookup_field(:,:), map_adspc2_set_counts_field(:,:), &
+&map_w3(:,:)
+    INTEGER(KIND=i_def) ndf_w3, undf_w3, ndf_adspc1_lookup_field, undf_adspc1_lookup_field, ndf_adspc2_set_counts_field, &
+&undf_adspc2_set_counts_field
+    INTEGER(KIND=i_def) max_halo_depth_mesh
+    TYPE(mesh_type), pointer :: mesh
+    INTEGER(KIND=i_def) set_counts_field_dummy_max_branch_length
+    INTEGER(KIND=i_def), pointer :: set_counts_field_dummy_stencil_size(:,:)
+    INTEGER(KIND=i_def), pointer :: set_counts_field_dummy_stencil_dofmap(:,:,:,:)
+    TYPE(stencil_2D_dofmap_type), pointer :: set_counts_field_dummy_stencil_map
+    INTEGER(KIND=i_def) lookup_field_dummy_max_branch_length
+    INTEGER(KIND=i_def), pointer :: lookup_field_dummy_stencil_size(:,:)
+    INTEGER(KIND=i_def), pointer :: lookup_field_dummy_stencil_dofmap(:,:,:,:)
+    TYPE(stencil_2D_dofmap_type), pointer :: lookup_field_dummy_stencil_map
+    INTEGER(KIND=i_def) dummy_w3_big_halo_max_branch_length
+    INTEGER(KIND=i_def), pointer :: dummy_w3_big_halo_stencil_size(:,:)
+    INTEGER(KIND=i_def), pointer :: dummy_w3_big_halo_stencil_dofmap(:,:,:,:)
+    TYPE(stencil_2D_dofmap_type), pointer :: dummy_w3_big_halo_stencil_map
+    nullify( set_counts_field_dummy_data, lookup_field_dummy_data, set_counts_field_data, &
+             lookup_field_data, dummy_w3_big_halo_data, map_adspc1_lookup_field, &
+             map_adspc2_set_counts_field, mesh, set_counts_field_dummy_stencil_size, &
+             set_counts_field_dummy_stencil_dofmap, set_counts_field_dummy_stencil_map, &
+             lookup_field_dummy_stencil_size, lookup_field_dummy_stencil_dofmap, &
+             lookup_field_dummy_stencil_map, dummy_w3_big_halo_stencil_size, &
+             dummy_w3_big_halo_stencil_dofmap, dummy_w3_big_halo_stencil_map )
+    !
+    ! Initialise field and/or operator proxies
+    !
+    dummy_w3_big_halo_proxy = dummy_w3_big_halo%get_proxy()
+    dummy_w3_big_halo_data => dummy_w3_big_halo_proxy%data
+    lookup_field_proxy = lookup_field%get_proxy()
+    lookup_field_data => lookup_field_proxy%data
+    set_counts_field_proxy = set_counts_field%get_proxy()
+    set_counts_field_data => set_counts_field_proxy%data
+    lookup_field_dummy_proxy = lookup_field_dummy%get_proxy()
+    lookup_field_dummy_data => lookup_field_dummy_proxy%data
+    set_counts_field_dummy_proxy = set_counts_field_dummy%get_proxy()
+    set_counts_field_dummy_data => set_counts_field_dummy_proxy%data
+    !
+    ! Initialise number of layers
+    !
+    nlayers_dummy_w3_big_halo = dummy_w3_big_halo_proxy%vspace%get_nlayers()
+    !
+    ! Create a mesh object
+    !
+    mesh => dummy_w3_big_halo_proxy%vspace%get_mesh()
+    max_halo_depth_mesh = mesh%get_halo_depth()
+    !
+    ! Initialise stencil dofmaps
+    !
+    dummy_w3_big_halo_stencil_map => dummy_w3_big_halo_proxy%vspace%get_stencil_2D_dofmap(STENCIL_2D_CROSS,stencil_extent)
+    dummy_w3_big_halo_max_branch_length = stencil_extent + 1_i_def
+    dummy_w3_big_halo_stencil_dofmap => dummy_w3_big_halo_stencil_map%get_whole_dofmap()
+    dummy_w3_big_halo_stencil_size => dummy_w3_big_halo_stencil_map%get_stencil_sizes()
+    lookup_field_dummy_stencil_map => lookup_field_dummy_proxy%vspace%get_stencil_2D_dofmap(STENCIL_2D_CROSS,stencil_extent)
+    lookup_field_dummy_max_branch_length = stencil_extent + 1_i_def
+    lookup_field_dummy_stencil_dofmap => lookup_field_dummy_stencil_map%get_whole_dofmap()
+    lookup_field_dummy_stencil_size => lookup_field_dummy_stencil_map%get_stencil_sizes()
+    set_counts_field_dummy_stencil_map => &
+&set_counts_field_dummy_proxy%vspace%get_stencil_2D_dofmap(STENCIL_2D_CROSS,stencil_extent)
+    set_counts_field_dummy_max_branch_length = stencil_extent + 1_i_def
+    set_counts_field_dummy_stencil_dofmap => set_counts_field_dummy_stencil_map%get_whole_dofmap()
+    set_counts_field_dummy_stencil_size => set_counts_field_dummy_stencil_map%get_stencil_sizes()
+    !
+    ! Look-up dofmaps for each function space
+    !
+    map_w3 => dummy_w3_big_halo_proxy%vspace%get_whole_dofmap()
+    map_adspc1_lookup_field => lookup_field_proxy%vspace%get_whole_dofmap()
+    map_adspc2_set_counts_field => set_counts_field_proxy%vspace%get_whole_dofmap()
+    !
+    ! Initialise number of DoFs for w3
+    !
+    ndf_w3 = dummy_w3_big_halo_proxy%vspace%get_ndf()
+    undf_w3 = dummy_w3_big_halo_proxy%vspace%get_undf()
+    !
+    ! Initialise number of DoFs for adspc1_lookup_field
+    !
+    ndf_adspc1_lookup_field = lookup_field_proxy%vspace%get_ndf()
+    undf_adspc1_lookup_field = lookup_field_proxy%vspace%get_undf()
+    !
+    ! Initialise number of DoFs for adspc2_set_counts_field
+    !
+    ndf_adspc2_set_counts_field = set_counts_field_proxy%vspace%get_ndf()
+    undf_adspc2_set_counts_field = set_counts_field_proxy%vspace%get_undf()
+    !
+    ! Set-up all of the loop bounds
+    !
+    loop0_start = 1
+    loop0_stop = mesh%get_last_halo_cell(loop_halo_depth)
+    !
+    ! Call kernels and communication routines
+    !
+    IF (lookup_field_proxy%is_dirty(depth=loop_halo_depth + stencil_extent)) THEN
+      CALL lookup_field_proxy%halo_exchange(depth=loop_halo_depth + stencil_extent)
+    END IF
+    IF (set_counts_field_proxy%is_dirty(depth=loop_halo_depth + stencil_extent)) THEN
+      CALL set_counts_field_proxy%halo_exchange(depth=loop_halo_depth + stencil_extent)
+    END IF
+    DO cell = loop0_start, loop0_stop, 1
+      CALL gen_apply_helmholtz_op_lookup_code(nlayers_dummy_w3_big_halo, dummy_w3_big_halo_data, &
+&dummy_w3_big_halo_stencil_size(:,cell), dummy_w3_big_halo_max_branch_length, dummy_w3_big_halo_stencil_dofmap(:,:,:,cell), &
+&lookup_field_data, set_counts_field_data, lookup_field_dummy_data, lookup_field_dummy_stencil_size(:,cell), &
+&lookup_field_dummy_max_branch_length, lookup_field_dummy_stencil_dofmap(:,:,:,cell), set_counts_field_dummy_data, &
+&set_counts_field_dummy_stencil_size(:,cell), set_counts_field_dummy_max_branch_length, &
+&set_counts_field_dummy_stencil_dofmap(:,:,:,cell), nindices, ndf_w3, undf_w3, map_w3(:,cell), ndf_adspc1_lookup_field, &
+&undf_adspc1_lookup_field, map_adspc1_lookup_field(:,cell), ndf_adspc2_set_counts_field, undf_adspc2_set_counts_field, &
+&map_adspc2_set_counts_field(:,cell))
+    END DO
+    !
+    ! Set halos dirty/clean for fields modified in the above loop
+    !
+    CALL lookup_field_proxy%set_dirty()
+    CALL lookup_field_proxy%set_clean(loop_halo_depth)
+    CALL set_counts_field_proxy%set_dirty()
+    CALL set_counts_field_proxy%set_clean(loop_halo_depth)
+    !
+    !
+  END SUBROUTINE invoke_gen_apply_helmholtz_op_lookup_kernel
 
 end module psykal_lite_gen_lookup_tables_psy_mod
