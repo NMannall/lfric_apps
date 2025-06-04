@@ -111,13 +111,19 @@ character(len=*), parameter :: RoutineName='LSP_FROUDE_MOIST'
 if (lhook) call dr_hook(ModuleName//':'//RoutineName,zhook_in,zhook_handle)
 
 ! Initialise BV freq profile
+!$OMP PARALLEL DEFAULT(NONE) PRIVATE(i,k) SHARED(levels,points,nsq,hmteff,     &
+!$OMP mt_high,ulow,vlow,nlow,ktop,kbot,zneu,uav,vav,nav,l_sfblock,u, l_cont,   &
+!$OMP l_cont2,l_cont3,theta,theta_levels,g)
+!$OMP DO SCHEDULE(STATIC)
 do k = 1, levels
   do i =1, points
     nsq(i,k)=0.0
   end do
 end do
+!$OMP END DO
 
 ! Initialise low-level parameters
+!$OMP DO SCHEDULE(STATIC)
 do i=1,points
   ! Mountain height
   mt_high(i) = hmteff(i)
@@ -140,11 +146,12 @@ do i=1,points
   l_cont2(i) = .true.
   l_cont3(i) = .true.
 end do
-
+!$OMP END DO
 
 ! Code copied from gw_setup
 ! --------------------------
 ! Estimate N squared at each level - DRY
+!$OMP DO SCHEDULE(STATIC)
 do k = 2, levels-1
   do i = 1, points
     if (l_sfblock(i)) then
@@ -154,13 +161,17 @@ do k = 2, levels-1
     end if!(l_sfblock(i)).
   end do !i = 1, points
 end do !k= 2, levels-1
+!$OMP END DO
 
+!$OMP DO SCHEDULE(STATIC)
 do i = 1, points
   !Set nsq(1)=nsq(2) as nsq is undefined on level 1
   nsq(i,1)       = nsq(i,2)
   !Set nsq(levels)=nsq(levels-1) as nsq is undefined on top level
   nsq(i,levels)  = nsq(i,levels-1)
 end do !i = 1, points
+!$OMP END DO
+!$OMP END PARALLEL
 
 ! Get bottom and top of averaging layer (top half mountain)
 do k = 1,levels
