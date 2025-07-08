@@ -49,7 +49,7 @@
                      umask 0022
                      module purge
                      module use /home/users/lfricadmin/lmod
-                     module load lfric/vn2.1
+                     module load lfric/vn2.2
                      module list 2>&1
                      """
 

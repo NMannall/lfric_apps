@@ -36,9 +36,9 @@
                                   'module purge ; '~
                                   'module use /home/users/lfricadmin/lmod ; ' %}
 
-{% set azspice_lfric2lfric_gnu = 'module load lfric/vn2.1' %}
+{% set azspice_lfric2lfric_gnu = 'module load lfric/vn2.2' %}
 
-{% set azspice_lfric2lfric_setup = 'module load xios/2252-oasis; module load oasis; module list; echo $FFLAGS; echo $LDFLAGS' %}
+{% set azspice_lfric2lfric_setup = 'module load xios/2701-oasis; module load oasis; module list; echo $FFLAGS; echo $LDFLAGS' %}
 
     [[BUILD_LFRIC2LFRIC_AZSPICE]]
         inherit=EX1A_BASE,EX1A_BUILD,EX1A_CCE
