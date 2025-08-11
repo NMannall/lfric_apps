@@ -146,13 +146,13 @@
   <field id="he" name="he" long_name="mass_fraction_of_helium_in_air" unit="kg kg-1" grid_ref="full_level_face_grid" />
   <field id="n2" name="n2" long_name="mass_fraction_of_nitrogen_in_air" unit="kg kg-1" grid_ref="full_level_face_grid" />
   <field id="o2" name="o2" long_name="mass_fraction_of_oxygen_in_air" unit="kg kg-1" grid_ref="full_level_face_grid" />
-  <field id="cs" name="cs" long_name="mass_fraction_of_cesium_in_air" unit="kg kg-1" operation="once" grid_ref="full_level_face_grid" />
-  <field id="k" name="k" long_name="mass_fraction_of_potassium_in_air" unit="kg kg-1" operation="once" grid_ref="full_level_face_grid" />
-  <field id="li" name="li" long_name="mass_fraction_of_lithium_in_air" unit="kg kg-1" operation="once" grid_ref="full_level_face_grid" />
-  <field id="na" name="na" long_name="mass_fraction_of_sodium_in_air" unit="kg kg-1" operation="once" grid_ref="full_level_face_grid" />
-  <field id="rb" name="rb" long_name="mass_fraction_of_rubidium_in_air" unit="kg kg-1" operation="once" grid_ref="full_level_face_grid" />
-  <field id="tio" name="tio" long_name="mass_fraction_of_titanium_oxide_in_air" unit="kg kg-1" operation="once" grid_ref="full_level_face_grid" />
-  <field id="vo" name="vo" long_name="mass_fraction_of_vanadium_oxide_in_air" unit="kg kg-1" operation="once" grid_ref="full_level_face_grid" />
+  <field id="cs" name="cs" long_name="mass_fraction_of_cesium_in_air" unit="kg kg-1" grid_ref="full_level_face_grid" />
+  <field id="k" name="k" long_name="mass_fraction_of_potassium_in_air" unit="kg kg-1" grid_ref="full_level_face_grid" />
+  <field id="li" name="li" long_name="mass_fraction_of_lithium_in_air" unit="kg kg-1" grid_ref="full_level_face_grid" />
+  <field id="na" name="na" long_name="mass_fraction_of_sodium_in_air" unit="kg kg-1" grid_ref="full_level_face_grid" />
+  <field id="rb" name="rb" long_name="mass_fraction_of_rubidium_in_air" unit="kg kg-1" grid_ref="full_level_face_grid" />
+  <field id="tio" name="tio" long_name="mass_fraction_of_titanium_oxide_in_air" unit="kg kg-1" grid_ref="full_level_face_grid" />
+  <field id="vo" name="vo" long_name="mass_fraction_of_vanadium_oxide_in_air" unit="kg kg-1" grid_ref="full_level_face_grid" />
   <!-- aerosol fields -->
   <field id="emiss_bc_biofuel" name="emiss_bc_biofuel" long_name="tendency_of_atmosphere_mass_content_of_black_carbon_dry_aerosol_due_to_emission_from_biofuel_burning" unit="kg m-2 s-1" domain_ref="face" />
   <field id="emiss_bc_fossil" name="emiss_bc_fossil" long_name="tendency_of_atmosphere_mass_content_of_black_carbon_dry_aerosol_due_to_emission_from_fossil_fuel_burning" unit="kg m-2 s-1" domain_ref="face" />
@@ -287,6 +287,7 @@
   <field id="albedo_obs_scaling" name="albedo_obs_scaling" long_name="albedo_obs_scaling" unit="1" domain_ref="face" axis_ref="land_tile_rad_band" />
   <field id="sea_ice_thickness" name="sea_ice_thickness" long_name="sea_ice_thickness" unit="m" domain_ref="face" axis_ref="sea_ice_categories" />
   <field id="sea_ice_temperature" name="sea_ice_temperature" long_name="sea_ice_bulk_temperature" unit="K" domain_ref="face" axis_ref="sea_ice_categories" />
+  <field id="internal_flux" name="internal_flux" long_name="internal_flux" unit="W m-2" domain_ref="face" />
   <!-- orography fields -->
   <field id="sd_orog" name="sd_orog" long_name="standard_deviation_of_orography"  unit="m" domain_ref="face" />
   <field id="grad_xx_orog" name="grad_xx_orog" long_name="orographic_gradient_XX_component"  unit="1" domain_ref="face" />
