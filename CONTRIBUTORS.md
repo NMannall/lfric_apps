@@ -63,3 +63,4 @@
 | mo-joshuacolclough  | Joshua Colclough   | Met Office                       | 2026-08-11 |
 | zmaalick            | Zubair Maalick     | Met Office                       | 2026-08-31 |
 | jerry-liu-jianyu    | Liu Jianyu         | NEA/MSS/CCRS                     | 2026-09-25 |
+| NMannall            | Nathan Mannall     | EPCC, University of Edinburgh    | 2026-11-12 |
